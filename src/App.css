@@ -1,38 +1,80 @@
-.App {
-  text-align: center;
+.container {
+  background-color: #f0f2f5;
+  padding: 20px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+@media only screen and (max-width: 767px) {
+  .container {
+    padding: 10px;
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.productListContainer .ant-card-body{
+  padding: 10px !important;
+}
+
+.headerContainer{
+  position: sticky;
+    bottom: 0;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    height: 50px !important;
+}
+
+.headerContainer ul {
+  height: 50px !important;
+}
+.headerContainer li{
+  height: 50px;
+  display: flex !important;
+  align-items: center;
+  line-height: normal !important;
+}
+
+.hori_rule{
+  width: 80%;
+    /* color: #d9d9d9; */
+    height: 1px;
+    background: #e2e2e2;
+    border: none;
+}
+
+.profile-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
+  /* Add more styles as needed */
+}
+
+.user-details {
+  margin-top: 10px;
+  text-align: center;
+  /* Add more styles as needed */
+}
+
+.loadingScreen{
+  position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 10000;
+    backdrop-filter: blur(8px);
+}
+
+
+.app-container {
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5; /* Optional: Adds a light background color */
 }
 
-.App-link {
-  color: #61dafb;
+.ant-form {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 80%;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
