@@ -10,17 +10,19 @@ import {
   getDownloadURL,
   uploadBytes,
 } from "firebase/storage";
+import { useDispatch, useSelector } from "react-redux";
 
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/setup";
 import { useNavigate } from "react-router-dom";
 import { SketchPicker } from "react-color";
+import { addStore } from "../actions/storeAction";
 
 function Dashboard() {
   const { Option } = Select;
   const [storeDetails, setStoreDetails] = useState({});
   let user = JSON.parse(localStorage.getItem("user"));
-
+  let dispatch = useDispatch();
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState(null);
   const [currentLogo, setCurrentLogo] = useState(null);
@@ -44,6 +46,7 @@ function Dashboard() {
         console.log("this user data", docSnap.data());
         let wholeData = docSnap.data();
         setStoreDetails(wholeData);
+        dispatch(addStore(docSnap.data()));
         setPrimaryColor(wholeData.primaryColor)
         setSecondaryColor(wholeData.secondaryColor)
         setCurrentLogo(wholeData.logo)

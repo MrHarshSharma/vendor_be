@@ -17,6 +17,9 @@ import Protected from "./components/Protected";
 import Profile from "./pages/Profile";
 import MenuPage from "./pages/MenuPage";
 import Orders from "./pages/Orders";
+import Analytics from "./pages/Analytics";
+import { Provider } from 'react-redux'
+import store from "./store";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,7 +28,8 @@ const router = createBrowserRouter(
         <Route path="/" index element={<Dashboard />} />
         <Route path="profile" index element={<Profile />} />
         <Route path="menu" index element={<MenuPage />} />
-        <Route path="/orders" index element={<Orders />} />
+        <Route path="orders" index element={<Orders />} />
+        <Route path="analytics" index element={<Analytics />} />
       </Route>
       <Route path="login" element={<MobileNumberLogin />} />
     </Route>
@@ -34,9 +38,11 @@ const router = createBrowserRouter(
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
+  <Provider store={store}>
     <ConfigProvider theme={{ token: { colorPrimary: "#00b96b" } }}>
       <RouterProvider router={router} />
     </ConfigProvider>
+    </Provider>
   </React.StrictMode>
 );
 

@@ -38,6 +38,7 @@ const MenuPage = () => {
       price: "",
       description: "",
       fileList: [],
+      veg_nonveg:'',
     };
     setCategories({
       ...categories,
@@ -82,6 +83,16 @@ const MenuPage = () => {
     fetchConfigstore();
   }, []);
 
+  const vegNonVegoptions = [
+    {
+      value: 'veg',
+      label: "Veg",
+    },
+    {
+      value:'nonveg',
+      label: "Non veg",
+    }
+  ]
   const handleFileChange = (category, index, { fileList }) => {
     const updatedCategories = { ...categories };
     updatedCategories[category][index].fileList = fileList;
@@ -163,6 +174,17 @@ const MenuPage = () => {
               handleInputChange(category, index, "ingridents", e.target.value)
             }
           />
+          <Select
+          size={'middle'}
+          defaultValue={`${item.veg_nonveg}`}
+          onChange={(value) =>
+            handleInputChange(category, index, "veg_nonveg", value)
+          }
+          style={{
+            width: 200,
+          }}
+          options={vegNonVegoptions}
+        />
           </div>
           <div>
             <Upload
@@ -303,7 +325,7 @@ const MenuPage = () => {
       const newCategories = {};
       jsonData.forEach((row, index) => {
         if (index > 0) { // Assuming the first row is the header
-          const [category, name, description, price, available,prep_time,servings, ingridents] = row;
+          const [category, name, description, price, available,prep_time,servings, ingridents, veg_nonveg] = row;
           if (!newCategories[category]) {
             newCategories[category] = [];
           }
@@ -314,6 +336,7 @@ const MenuPage = () => {
             available: available,
             prep_time,servings, ingridents,
             fileList: [],
+            veg_nonveg: veg_nonveg
           });
         }
       });

@@ -11,7 +11,7 @@ MenuOutlined,
   SettingOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
-
+import { TbDeviceAnalytics } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 
 const { Header, Content } = Layout;
@@ -77,8 +77,10 @@ const MainMenu = () => {
           Profile
         </Menu.Item>
   
-        <Menu.Item key="4" icon={<SettingOutlined />} className="app-light">
-          Settings
+        <Menu.Item key="/analytics" icon={<TbDeviceAnalytics />} onClick={() => {
+          navigate("/analytics");
+        }} className="app-light">
+          Analytics
         </Menu.Item>
         <Menu.Item key="/menu" icon={<MenuOutlined />} onClick={() => {
           navigate("/menu");

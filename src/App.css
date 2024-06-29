@@ -67,6 +67,8 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
+  padding: 10px;
+  gap:20px;
   background-color: #f0f2f5; /* Optional: Adds a light background color */
 }
 
@@ -78,3 +80,19 @@
   width: 80%;
 }
 
+
+
+.CustomerDiv{
+  display:flex ;
+  flex-direction:row;
+   align-items:center; 
+   gap:10px;
+   cursor: pointer;
+   transition: .3s;
+   border-radius: 5px;
+   padding: 10px;
+}
+
+.CustomerDiv:hover{
+  background-color: #44b96b8c;
+}
