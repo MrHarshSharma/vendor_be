@@ -19,6 +19,8 @@
     border-bottom-right-radius: 15px;
     border-bottom-left-radius: 15px;
     height: 50px !important;
+    padding: 0 !important;
+    overflow: hidden;
 }
 
 .headerContainer ul {
@@ -95,4 +97,45 @@
 
 .CustomerDiv:hover{
   background-color: #44b96b8c;
+}
+
+.podium {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-end; /* Align items to the bottom */
+  gap: 20px; /* Adjust gap between podiums */
+  height: 180px; /* Adjust height as needed */
+}
+
+.podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #f0f0f0;
+  width: 80px; /* Adjust width as needed */
+  text-align: center;
+}
+
+.podium-item:nth-child(2) {
+  height: 120px; /* Adjust height for the 2nd place */
+  background-color: #c0c0c0; /* Silver color */
+}
+
+.podium-item:first-child {
+  height: 150px; /* Adjust height for the 1st place */
+  background-color: #FFD700; /* Gold color */
+}
+
+.podium-item:last-child {
+  height: 100px; /* Adjust height for the 3rd place */
+  background-color: #cd7f32; /* Bronze color */
+}
+
+.podium-icon {
+  font-size: 20px;
+  margin-bottom: 5px;
 }

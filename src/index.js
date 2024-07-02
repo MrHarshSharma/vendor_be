@@ -17,9 +17,9 @@ import Protected from "./components/Protected";
 import Profile from "./pages/Profile";
 import MenuPage from "./pages/MenuPage";
 import Orders from "./pages/Orders";
-import Analytics from "./pages/Analytics";
 import { Provider } from 'react-redux'
 import store from "./store";
+import CustomerRelation from "./pages/CustomerRelation";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,7 +29,7 @@ const router = createBrowserRouter(
         <Route path="profile" index element={<Profile />} />
         <Route path="menu" index element={<MenuPage />} />
         <Route path="orders" index element={<Orders />} />
-        <Route path="analytics" index element={<Analytics />} />
+        <Route path="customers" index element={<CustomerRelation />} />
       </Route>
       <Route path="login" element={<MobileNumberLogin />} />
     </Route>

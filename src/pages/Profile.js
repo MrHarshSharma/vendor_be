@@ -77,9 +77,9 @@ function Profile() {
         {user && (
           <div style={{ marginTop: '20px', display:'flex', flexDirection:'column', alignItems:'center' }}>
           <span>scan for the menu</span>
-            <QRCode value={`${variables.isDeployed?variables.deployedURL:'http://localhost:3001/'}menu/${user.uid}`} />
+            <QRCode value={`${variables.isDeployed?variables.deployedURL:'http://localhost:3001'}/menu/${user.uid}`} />
             <hr style={{width:'100%'}}/>
-            <a href={`${variables.isDeployed?variables.deployedURL:'http://localhost:3001/'}menu/${user.uid}`} target="_blank">click for menu</a>
+            <a href={`${variables.isDeployed?variables.deployedURL:'http://localhost:3001'}/menu/${user.uid}`} target="_blank">click for menu</a>
           </div>
         )}
       </div>

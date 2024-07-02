@@ -13,6 +13,7 @@ MenuOutlined,
 } from "@ant-design/icons";
 import { TbDeviceAnalytics } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+import { HiUserGroup } from "react-icons/hi";
 
 const { Header, Content } = Layout;
 
@@ -77,10 +78,10 @@ const MainMenu = () => {
           Profile
         </Menu.Item>
   
-        <Menu.Item key="/analytics" icon={<TbDeviceAnalytics />} onClick={() => {
-          navigate("/analytics");
+        <Menu.Item key="/customers" icon={<HiUserGroup />} onClick={() => {
+          navigate("/customers");
         }} className="app-light">
-          Analytics
+          Customers
         </Menu.Item>
         <Menu.Item key="/menu" icon={<MenuOutlined />} onClick={() => {
           navigate("/menu");

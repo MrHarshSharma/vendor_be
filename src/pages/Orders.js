@@ -23,7 +23,7 @@ import { ImPrinter } from "react-icons/im";
 
 import newOrderSound from "../sound/noti.wav";
 import Bill from "../components/Bill";
-import { variables } from "../constants/variables";
+import { feedbackFormVariables, variables } from "../constants/variables";
 const Orders = () => {
   const componentRef = useRef();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -124,17 +124,16 @@ console.log(storeDetails)
         (total, item) => total + item.price * item.quantity,
         0
       )} Rs only`,
-      store_name: storeDetails.restaurantName,
-      store_email: `${storeDetails.restaurantName.replace(/ /g, '_')}@gmail.com`,
-      feedback_link:`${variables.deployedURL}/feedback/${user.uid}/${order.id}`
+      store_name: storeDetails?.restaurantName,
+      store_email: `${storeDetails?.restaurantName?.replace(/ /g, '_')}@gmail.com`,
+      feedback_link:`${variables.deployedURL}/feedback/${user.uid}/${order.id}/${order.customer.uid}`
     };
 
-     
-    let serviceId = 'service_bb7awkl'
-    let templateId= 'template_lb8n1xp'
-    let userId = '_Fa9TgZvURHFy_BkR'
+    //  console.log(templateParams);
+    //  return
+  
     emailjs
-      .send(serviceId, templateId, templateParams, userId)
+      .send(feedbackFormVariables.serviceId, feedbackFormVariables.templateId ,templateParams, feedbackFormVariables.emailJsUserId)
       .then(
         (result) => {
           console.log('Email sent successfully:', result.text);
