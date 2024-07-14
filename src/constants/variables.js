@@ -8,3 +8,9 @@ export const feedbackFormVariables = {
      templateId : 'template_lb8n1xp',
      emailJsUserId : '_Fa9TgZvURHFy_BkR',
 }
+
+export const acceptOrderVariables = {
+    serviceId : 'service_bb7awkl',
+    templateId : 'template_ovjpvle',
+    emailJsUserId : '_Fa9TgZvURHFy_BkR'
+}

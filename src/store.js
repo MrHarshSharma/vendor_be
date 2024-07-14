@@ -1,9 +1,10 @@
 import { createStore, combineReducers } from 'redux';
 
-import { storeReducer } from '../src/reducers/storeReducer'
+import { loadingReducer, storeReducer } from '../src/reducers/storeReducer'
 
 const rootReducer = combineReducers({
-     storeReducer
+     storeReducer,
+     loadingReducer
   });
 
 const store = createStore(rootReducer,window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());

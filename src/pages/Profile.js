@@ -7,14 +7,13 @@ import { db } from "../firebase/setup";
 import { doc, getDoc } from "firebase/firestore";
 import QRCode from 'qrcode.react';
 import { variables } from "../constants/variables";
+import { useDispatch } from "react-redux";
+import { setPageLoading } from "../actions/storeAction";
 
 
 function Profile() {
-  const empyMenu={
-    maincourse: [],
-    starter: [],
-    beverage: [],
-  }
+
+  const dispatch = useDispatch();
 
   const user = JSON.parse(localStorage.getItem("user"));
   const [storeDetails, setStoreDetails] = useState(null);
@@ -37,6 +36,8 @@ function Profile() {
       }
     } catch (error) {
       console.error("Error fetching document:", error);
+    }finally{
+      dispatch(setPageLoading({payload:false}))
     }
   };
 
@@ -54,7 +55,6 @@ function Profile() {
 
 
 
- 
   return (
     <AppLayout>
       <div className="profile-container">
@@ -73,6 +73,7 @@ function Profile() {
             <MailOutlined /> {user.email}
           </p>
         </div>
+       
         <Divider /> {/* Optional divider for better separation */}
         {user && (
           <div style={{ marginTop: '20px', display:'flex', flexDirection:'column', alignItems:'center' }}>

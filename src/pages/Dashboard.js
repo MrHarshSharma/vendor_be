@@ -16,7 +16,7 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/setup";
 import { useNavigate } from "react-router-dom";
 import { SketchPicker } from "react-color";
-import { addStore } from "../actions/storeAction";
+import { addStore, setPageLoading } from "../actions/storeAction";
 
 function Dashboard() {
   const { Option } = Select;
@@ -43,7 +43,7 @@ function Dashboard() {
       const docSnap = await getDoc(configRef);
 
       if (docSnap.exists()) {
-        console.log("this user data", docSnap.data());
+        // console.log("this user data", docSnap.data());
         let wholeData = docSnap.data();
         setStoreDetails(wholeData);
         dispatch(addStore(docSnap.data()));
@@ -63,6 +63,8 @@ function Dashboard() {
       }
     } catch (error) {
       console.error("Error fetching document:", error);
+    }finally{
+      dispatch(setPageLoading({payload:false}))
     }
   };
 

@@ -10,8 +10,11 @@ import {
 import { db } from "../firebase/setup";
 import { Form, Table } from "antd";
 import { RiMedalFill } from "react-icons/ri";
+import { useDispatch } from "react-redux";
+import { setPageLoading } from "../actions/storeAction";
 
 const CustomerRelation = () => {
+  const dispatch = useDispatch();
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(undefined);
   const [customerOrders, setCustomerOrders] = useState([]);
@@ -33,11 +36,14 @@ const CustomerRelation = () => {
           id: doc.id,
           ...doc.data(),
         }));
+        
         setCustomers(docs);
 
         console.log("customers",docs)
       } catch (error) {
         console.error("Error fetching documents: ", error);
+      } finally{
+        dispatch(setPageLoading({payload:false}))
       }
     };
 
@@ -50,7 +56,7 @@ const CustomerRelation = () => {
   useEffect(() => {
    
     if(selectedCustomer!==undefined){
-
+      dispatch(setPageLoading({payload:true}))
       fetchCustomerData(selectedCustomer.email);
     }
   }, [selectedCustomer]);
@@ -114,6 +120,8 @@ const CustomerRelation = () => {
       }
     } catch (error) {
       console.error("Error fetching documents: ", error);
+    } finally {
+      dispatch(setPageLoading({payload:false}))
     }
   };
 
@@ -195,6 +203,7 @@ const CustomerRelation = () => {
       dataIndex: "id",
       key: "id",
       width: "20%",
+      render:(id,_)=><span>{id}</span>
     },
     {
       title: "Date / Time",
@@ -305,14 +314,17 @@ const CustomerRelation = () => {
             flexDirection: "column",
             width: "20%",
             gap: "10px",
+            maxHeight:tableHeights+200,
+            overflow: "auto",
           }}
         >
-          <h2>My Customers</h2>
+          <span style={{fontSize:'20px'}}>My Customers</span>
           {customers.map((customer, i) => (
             <div
               style={{
                 background:
                   selectedCustomer?.id === customer?.id ? "#44b96b" : "",
+                 
               }}
               className="CustomerDiv"
               onClick={() => selectThisCustomer(customer)}

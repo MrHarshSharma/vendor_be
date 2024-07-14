@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Layout } from "antd";
+import { Menu, Layout, message } from "antd";
+import { db } from '../firebase/setup'
+import { collection, query, where, getDocs } from 'firebase/firestore';
+
 import {
   ShoppingCartOutlined,
   UserOutlined,
@@ -14,13 +17,46 @@ MenuOutlined,
 import { TbDeviceAnalytics } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import { HiUserGroup } from "react-icons/hi";
+import { checkIsUserPlanExpired } from "../constants/commonFunctions";
+import { useDispatch } from "react-redux";
+import { setPageLoading } from "../actions/storeAction";
 
 const { Header, Content } = Layout;
 
 const MainMenu = () => {
+  let user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [hideMenu, setHideMenu] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(window.pageYOffset);
+
+  useEffect(() => {
+    fetchUserDocument();
+  }, []);
+
+  const fetchUserDocument = async () => {
+    try {
+      const q = query(
+        collection(db, 'authUser'),
+        where('email', '==', user.email)
+      );
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        const docData = querySnapshot.docs[0].data(); // Assuming only one document matches
+        let isExpired = checkIsUserPlanExpired(docData.expiryDate);
+        if(isExpired) {
+          message.error('Your plan has expired')
+          localStorage.clear();
+          navigate("/login");
+        }
+      } else {
+        console.log('No matching documents.');
+      }
+    } catch (error) {
+      console.error('Error fetching document: ', error);
+    }
+  };
 
   const handleScroll = () => {
     const currentScrollPos = window.pageYOffset;
@@ -39,6 +75,11 @@ const MainMenu = () => {
     setHideMenu(true);
     console.log();
   }, []);
+
+  const navigateTo = (route) => {
+    dispatch(setPageLoading({payload:true}))
+    navigate(route);
+  }
 
   return (
     <Header
@@ -61,7 +102,7 @@ const MainMenu = () => {
           key="/"
           icon={<HomeOutlined />}
           onClick={() => {
-            navigate("/");
+            navigateTo("/");
           }}
           className="app-light"
         >
@@ -71,7 +112,7 @@ const MainMenu = () => {
           key="/profile"
           icon={<UserOutlined />}
           onClick={() => {
-            navigate("/profile");
+            navigateTo("/profile");
           }}
           className="app-light"
         >
@@ -79,17 +120,17 @@ const MainMenu = () => {
         </Menu.Item>
   
         <Menu.Item key="/customers" icon={<HiUserGroup />} onClick={() => {
-          navigate("/customers");
+          navigateTo("/customers");
         }} className="app-light">
           Customers
         </Menu.Item>
         <Menu.Item key="/menu" icon={<MenuOutlined />} onClick={() => {
-          navigate("/menu");
+          navigateTo("/menu");
         }} className="app-light" >
         Menu
       </Menu.Item>
       <Menu.Item key="/orders" onClick={() => {
-        navigate("/orders");
+        navigateTo("/orders");
       }} icon={<ProductOutlined />} className="app-light">
       Orders
     </Menu.Item>

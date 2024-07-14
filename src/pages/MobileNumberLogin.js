@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 import { Form, Input, Button, Row, Col, Typography, message } from "antd";
-import { RecaptchaVerifier, signInWithPhoneNumber, signInWithPopup } from "firebase/auth";
-import GoogleButton from 'react-google-button'
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  signInWithPopup,
+} from "firebase/auth";
+import GoogleButton from "react-google-button";
 import { useNavigate } from "react-router-dom";
-import {provider, db, auth} from "../firebase/setup";
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import { provider, db, auth } from "../firebase/setup";
+import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 
+import moment from "moment";
+import { checkIsUserPlanExpired } from "../constants/commonFunctions";
 
 const { Title } = Typography;
 
@@ -16,17 +22,17 @@ const MobileNumberLogin = () => {
   const [phone, setPhone] = useState("");
   const [user, setUser] = useState(null);
   const [isOtpSent, setOtpSent] = useState(false);
-const googleSignIn = async () => {
-  try{
-    const results = await signInWithPopup(auth, provider)
-    console.log(results)
-    localStorage.setItem('token',results.user.accessToken)
-    localStorage.setItem('user',JSON.stringify(results.user))
-    navigate("/")
-  }catch(e){
-    console.error(e)
-  }
-}
+  const googleSignIn = async () => {
+    try {
+      const results = await signInWithPopup(auth, provider);
+      console.log(results);
+      localStorage.setItem("token", results.user.accessToken);
+      localStorage.setItem("user", JSON.stringify(results.user));
+      navigate("/");
+    } catch (e) {
+      console.error(e);
+    }
+  };
   const sendOtp = async (values) => {
     try {
       setLoading(true);
@@ -68,16 +74,29 @@ const googleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const userRef = doc(db, 'users', user.uid);
-      const querySnapshot = await getDocs(collection(db, 'authUser'));
-      const typesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const isUserAuthorised = typesData.filter((thisuser)=>thisuser.email === user.email).length > 0
-           
-      if(isUserAuthorised){
+      const userRef = doc(db, "users", user.uid);
+      const querySnapshot = await getDocs(collection(db, "authUser"));
+      const typesData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      const isUserAuthorised = typesData.filter(
+        (thisuser) => thisuser.email === user.email
+      );
+
+      if (isUserAuthorised.length > 0) {
+        const isExpired = checkIsUserPlanExpired(
+          isUserAuthorised[0].expiryDate
+        );
+        console.log(isExpired);
+        if (isExpired) {
+          message.error(`Plan expired for ${user.email}`);
+          return;
+        }
         message.success(`Login successful`);
-      }else{
+      } else {
         message.error(`${user.email} is not authorized to login`);
-        return
+        return;
       }
 
       const userData = {
@@ -85,16 +104,16 @@ const googleSignIn = async () => {
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      };
       const docSnap = await getDoc(userRef);
 
       if (!docSnap.exists()) {
         await setDoc(userRef, userData);
       }
-      localStorage.setItem('token',result.user.accessToken)
-      localStorage.setItem('user',JSON.stringify(userData))
-      navigate("/")
+      localStorage.setItem("token", result.user.accessToken);
+      localStorage.setItem("user", JSON.stringify(userData));
+      navigate("/");
       console.log("User signed in:", user);
       return user;
     } catch (error) {
@@ -105,28 +124,38 @@ const googleSignIn = async () => {
   const handleSignIn = async () => {
     const user = await signInWithGoogle();
     if (user) {
-      console.log('User signed in:', user);
+      console.log("User signed in:", user);
     }
   };
 
   return (
     <div className="container">
       <Row justify="center" align="middle" style={{ minHeight: "95vh" }}>
-        <Col xs={20} sm={16} md={12} lg={8} xl={6} style={{display:'flex', flexDirection:'column', justifyContent:'center'}}>
-         
+        <Col
+          xs={20}
+          sm={16}
+          md={12}
+          lg={8}
+          xl={6}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
           {!isOtpSent && (
-            <div>
+            <div style={{display:'flex', justifyContent:'center', alignItems:'center'}}>
               <Form
-              disabled
+                disabled
                 name="login"
                 initialValues={{ remember: true }}
                 onFinish={sendOtp}
                 layout="vertical"
               >
-              <Title level={3} style={{ textAlign: "center" }}>
-              Mobile Number Login
-            </Title>
-  
+                <Title level={3} style={{ textAlign: "center" }}>
+                  Mobile Number Login
+                </Title>
+
                 <Form.Item
                   name="mobileNumber"
                   label="Mobile Number"
@@ -155,11 +184,18 @@ const googleSignIn = async () => {
                   </Button>
                 </Form.Item>
 
-                <div><hr className="hori_rule"/></div>
-                <div style={{display:'flex', alignItems:'center', justifyContent:'center', marginTop:'20px' }}>
-                <GoogleButton
-                onClick={() => handleSignIn()}
-                />
+                <div>
+                  <hr className="hori_rule" />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginTop: "20px",
+                  }}
+                >
+                  <GoogleButton onClick={() => handleSignIn()} />
                 </div>
               </Form>
               <div id="recapthca"></div>
@@ -188,9 +224,8 @@ const googleSignIn = async () => {
               </Form.Item>
             </Form>
           )}
-        {/*</Col>
+          {/*</Col>
           <Col xs={20} sm={16} md={12} lg={8} xl={6}>*/}
-         
         </Col>
       </Row>
     </div>
