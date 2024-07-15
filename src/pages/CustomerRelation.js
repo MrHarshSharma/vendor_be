@@ -194,13 +194,13 @@ const CustomerRelation = () => {
   };
 
   const columns = [
-    {
-      title: "orderId",
-      dataIndex: "id",
-      key: "id",
-      width: "20%",
-      render: (id, _) => <span>{id}</span>,
-    },
+    // {
+    //   title: "orderId",
+    //   dataIndex: "id",
+    //   key: "id",
+    //   width: "20%",
+    //   render: (id, _) => <span>{id}</span>,
+    // },
     {
       title: "Date / Time",
       dataIndex: "timeStamp",
@@ -238,7 +238,7 @@ const CustomerRelation = () => {
           );
         });
       },
-      width: "30%",
+      width: "40%",
     },
     {
       title: "Total price",
@@ -306,63 +306,12 @@ const CustomerRelation = () => {
       width: "30%",
     },
   ];
-
-  return (
-    <AppLayout>
-      <div className="app-container">
-        <Form
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "20%",
-            gap: "10px",
-            maxHeight: tableHeights + 200,
-            overflow: "auto",
-          }}
-        >
-          <span style={{ fontSize: "20px" }}>My Customers</span>
-          {customers.map((customer, i) => (
-            <div
+const userSummary = () =>{
+  return(
+    <>
+      <div
               style={{
-                background:
-                  selectedCustomer?.id === customer?.id ? "#44b96b" : "",
-              }}
-              className="CustomerDiv"
-              onClick={() => selectThisCustomer(customer)}
-            >
-              <img
-                src={customer.photoURL}
-                style={{ width: "40px", borderRadius: "100%" }}
-              />
-              <span>{customer.displayName}</span>
-            </div>
-          ))}
-        </Form>
-        {selectedCustomer && (
-          <Form
-            style={{
-              background: "",
-              display: "flex",
-              flexDirection: "row",
-              width: "80%",
-              gap: "20px",
-            }}
-          >
-            <div style={{ width: "75%" }}>
-              <Table
-                dataSource={customerOrders}
-                columns={columns}
-                pagination={{
-                  pageSize: 10,
-                }}
-                scroll={{
-                  y: tableHeights,
-                }}
-              />
-            </div>
-            <div
-              style={{
-                width: "25%",
+                // width: "25%",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
@@ -452,8 +401,76 @@ const CustomerRelation = () => {
                 <div>{renderfrequestItems()}</div>
               </div>
             </div>
+    </>
+  )
+}
+  return (
+    <AppLayout>
+      <div className="app-container customerCotainer">
+        
+        <Form
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "20%",
+            gap: "10px",
+            maxHeight: tableHeights + 200,
+            overflow: "auto",
+          }}
+        >
+          <span style={{ fontSize: "20px" }}>My Customers</span>
+          {customers.map((customer, i) => (
+            <div
+              style={{
+                background:
+                  selectedCustomer?.id === customer?.id ? "#44b96b" : "",
+              }}
+              className="CustomerDiv"
+              onClick={() => selectThisCustomer(customer)}
+            >
+              <img
+                src={customer.photoURL}
+                style={{ width: "40px", borderRadius: "100%" }}
+              />
+              <span>{customer.displayName}</span>
+            </div>
+          ))}
+        </Form>
+        {selectedCustomer && (
+          <Form style={{width:'25%'}}>
+            {userSummary}
           </Form>
         )}
+      
+        {selectedCustomer && (
+          <Form
+            style={{
+              background: "",
+              display: "flex",
+              flexDirection: "row",
+              width: "80%",
+              gap: "20px",
+              overflow:'auto'
+            }}
+          >
+            <div style={{ width: 'auto' }}>
+              <Table
+                dataSource={customerOrders}
+                columns={columns}
+                pagination={{
+                  pageSize: 10,
+                }}
+                scroll={{
+                  y: tableHeights,
+                  x:'auto'
+                }}
+              />
+            </div>
+            
+          </Form>
+        )}
+
+       
       </div>
     </AppLayout>
   );

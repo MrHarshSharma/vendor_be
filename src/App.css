@@ -7,7 +7,43 @@
   .container {
     padding: 10px;
   }
+  .customerCotainer{
+
+    /* background: red !important; */
+        flex-direction: column;
+        height: auto !important;
+  }
+
+  .menuContainer, .orderCotainer .ant-form, .dashboardContainer .ant-form ,.customerCotainer .ant-form {
+    width: 100% !important;
+  }
+  .menuContainer .ant-card-body {
+    padding: 5px !important;
+  }
+
+  .orderCotainer {
+    padding:10px !important;
+  }
+  .orderCotainer .ant-form{
+    padding: 10px !important;
+  }
+
+  .menuInputs, .orderheader{
+    flex-direction: column !important;
+  }
+
+  .orderheader > div{
+    width: 100% !important;
+    justify-content: space-between;
+  }
+
+  .orderheader > div:nth-child(2){
+    margin-top: 20px;
+  }
+
+ 
 }
+
 
 .productListContainer .ant-card-body{
   padding: 10px !important;

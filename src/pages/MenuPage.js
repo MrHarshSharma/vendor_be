@@ -362,10 +362,10 @@ const MenuPage = () => {
     <AppLayout>
       <div style={{ padding: "24px" }}>
         <Form layout="vertical" style={{ width: "100%" }} onFinish={handleSubmit}>
-          <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+          <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }} className="menuInputs">
       
 
-          <input name='uploadExcel' type="file" accept=".xlsx, .xls" onChange={handleExcelUpload} />
+          <input name='uploadExcel' type="file" accept=".xlsx, .xls" placeholder='uokiad' onChange={handleExcelUpload} />
          
             <Select
               mode="tags"
@@ -397,6 +397,7 @@ const MenuPage = () => {
                   height: "fit-content",
                   width: "32%",
                 }}
+                className="menuContainer"
               >
                 {renderFormItems(category)}
                 <Button type="dashed" onClick={() => addItem(category)} block>

@@ -191,7 +191,7 @@ function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="app-container">
+      <div className="app-container dashboardContainer">
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <h1 className="app-bold">Basic details</h1>
           <Form.Item
@@ -314,16 +314,16 @@ function Dashboard() {
           valuePropName="fileList"
           getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
           // rules={[{required:true, message: "Please upload a logo!" }]}
-          style={{maxWidth:'300px'}}
+      
           >
           <Upload
           name="logo"
           listType="picture"
           onChange={(e)=>handleUpload(e)}
           beforeUpload={() => false}
-         
+          // style={{maxWidth:'200px'}}
           >
-          <Button icon={<UploadOutlined />}  style={{width:'215px'}}>Click to upload</Button>
+          <Button icon={<UploadOutlined />}  style={{width:'212px'}}>Click to upload</Button>
           </Upload>
           
           

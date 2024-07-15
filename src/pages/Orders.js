@@ -257,7 +257,7 @@ const Orders = () => {
   };
   return (
     <AppLayout>
-      <div className="app-container" style={{ padding: "20px 50px" }}>
+      <div className="app-container orderCotainer" style={{ padding: "20px 50px" }}>
         <Modal
           title="Bill preview"
           open={isModalOpen}
@@ -373,7 +373,7 @@ const Orders = () => {
                     )}
                     
                   </div>
-                  <div style={{ display: "flex" }}>
+                  <div style={{ display: "flex" }} className="orderheader">
                     <div
                       style={{
                         display: "flex",
@@ -382,7 +382,7 @@ const Orders = () => {
                         width: "50%",
                       }}
                     >
-                      <span>{order.id}</span>
+                      {/* <span>{order.id}</span> */}
                       <span>{order.customer?.displayName}</span>
                       <span style={{display:'flex', flexDirection:'column' }}>
                       <span>

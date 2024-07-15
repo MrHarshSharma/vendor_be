@@ -1,5 +1,5 @@
 export const variables = {
-    deployedURL :'https://vendor-drab.vercel.app',
+    deployedURL :'https://cherishchow.vercel.app',
     isDeployed : true
 }
 
