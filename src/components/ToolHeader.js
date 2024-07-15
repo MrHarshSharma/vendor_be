@@ -106,7 +106,7 @@ const MainMenu = () => {
           }}
           className="app-light"
         >
-          Billing center
+         Cherish chow
         </Menu.Item>
         <Menu.Item
           key="/profile"

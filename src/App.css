@@ -101,41 +101,53 @@
 
 .podium {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-end; /* Align items to the bottom */
+  align-items: flex-start; /* Align items to the bottom */
   gap: 20px; /* Adjust gap between podiums */
-  height: 180px; /* Adjust height as needed */
+  margin-top: 10px;
+  /* height: 50px; Adjust height as needed */
 }
 
 .podium-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: flex-end;
+  gap:10px;
+  justify-content: flex-start;
   padding: 10px;
   border-radius: 10px;
   background-color: #f0f0f0;
-  width: 80px; /* Adjust width as needed */
+  width: 90%; /* Adjust width as needed */
   text-align: center;
+  position: relative;
+  padding-left: 15px;
 }
 
 .podium-item:nth-child(2) {
-  height: 120px; /* Adjust height for the 2nd place */
+  height: 20px; /* Adjust height for the 2nd place */
+  width: 80% !important;
   background-color: #c0c0c0; /* Silver color */
 }
 
 .podium-item:first-child {
-  height: 150px; /* Adjust height for the 1st place */
+  height: 20px; /* Adjust height for the 1st place */
   background-color: #FFD700; /* Gold color */
+  width: 90% !important;
+
 }
 
 .podium-item:last-child {
-  height: 100px; /* Adjust height for the 3rd place */
+  height: 20px; /* Adjust height for the 3rd place */
   background-color: #cd7f32; /* Bronze color */
+  width: 70% !important;
+
 }
 
 .podium-icon {
   font-size: 20px;
-  margin-bottom: 5px;
+  /* margin-bottom: 5px; */
+  position: absolute;
+  top: 0;
+  left: 0;
 }

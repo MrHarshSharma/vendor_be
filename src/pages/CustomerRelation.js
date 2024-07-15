@@ -36,14 +36,14 @@ const CustomerRelation = () => {
           id: doc.id,
           ...doc.data(),
         }));
-        
+
         setCustomers(docs);
 
-        console.log("customers",docs)
+        console.log("customers", docs);
       } catch (error) {
         console.error("Error fetching documents: ", error);
-      } finally{
-        dispatch(setPageLoading({payload:false}))
+      } finally {
+        dispatch(setPageLoading({ payload: false }));
       }
     };
 
@@ -51,12 +51,9 @@ const CustomerRelation = () => {
     setTableHeights(window.innerHeight - 300);
   }, []);
 
-
-
   useEffect(() => {
-   
-    if(selectedCustomer!==undefined){
-      dispatch(setPageLoading({payload:true}))
+    if (selectedCustomer !== undefined) {
+      dispatch(setPageLoading({ payload: true }));
       fetchCustomerData(selectedCustomer.email);
     }
   }, [selectedCustomer]);
@@ -67,7 +64,7 @@ const CustomerRelation = () => {
         const orderQuery = query(
           collection(db, "orders"),
           where("storeId", "==", user.uid),
-          where("customer.email", "==",email)
+          where("customer.email", "==", email)
         );
         const orderSnapshot = await getDocs(orderQuery);
         const orderDocs = orderSnapshot.docs.map((doc) => ({
@@ -121,7 +118,7 @@ const CustomerRelation = () => {
     } catch (error) {
       console.error("Error fetching documents: ", error);
     } finally {
-      dispatch(setPageLoading({payload:false}))
+      dispatch(setPageLoading({ payload: false }));
     }
   };
 
@@ -160,13 +157,12 @@ const CustomerRelation = () => {
     setSelectedCustomer(thisCustomer);
   };
 
-
   const paintStars = (number) => {
-  let starts = '';
-  for (let i = 0; i <number;i++) starts +=`⭐`
+    let starts = "";
+    for (let i = 0; i < number; i++) starts += `⭐`;
 
-  return starts
-  }
+    return starts;
+  };
 
   const renderfrequestItems = () => {
     const foodArray = Object.entries(allFoodItemHePurchased);
@@ -203,7 +199,7 @@ const CustomerRelation = () => {
       dataIndex: "id",
       key: "id",
       width: "20%",
-      render:(id,_)=><span>{id}</span>
+      render: (id, _) => <span>{id}</span>,
     },
     {
       title: "Date / Time",
@@ -277,24 +273,30 @@ const CustomerRelation = () => {
                     display: "flex",
                     flexDirection: "row",
                     borderBottom: "1px solid #e2e2e2",
-                    justifyContent:'space-between',
+                    justifyContent: "space-between",
                   }}
                 >
-                <div style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  width: "70%",
-                }}>
-
-                <span> {feedbackItem?.itemName}</span>
-                  <span>{feedbackItem.comment}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      width: "70%",
+                    }}
+                  >
+                    <span> {feedbackItem?.itemName}</span>
+                    <span>{feedbackItem.comment}</span>
                   </div>
-                <div style={{width:'30%', display:'flex', justifyContent:'end'}}>
-                <span style={{fontSize:'10px'}}>
-                {paintStars(feedbackItem.rating)}
-                </span>
-                </div>
-              
+                  <div
+                    style={{
+                      width: "30%",
+                      display: "flex",
+                      justifyContent: "end",
+                    }}
+                  >
+                    <span style={{ fontSize: "10px" }}>
+                      {paintStars(feedbackItem.rating)}
+                    </span>
+                  </div>
                 </div>
               );
             })}
@@ -314,17 +316,16 @@ const CustomerRelation = () => {
             flexDirection: "column",
             width: "20%",
             gap: "10px",
-            maxHeight:tableHeights+200,
+            maxHeight: tableHeights + 200,
             overflow: "auto",
           }}
         >
-          <span style={{fontSize:'20px'}}>My Customers</span>
+          <span style={{ fontSize: "20px" }}>My Customers</span>
           {customers.map((customer, i) => (
             <div
               style={{
                 background:
                   selectedCustomer?.id === customer?.id ? "#44b96b" : "",
-                 
               }}
               className="CustomerDiv"
               onClick={() => selectThisCustomer(customer)}
@@ -391,16 +392,49 @@ const CustomerRelation = () => {
                   <span>Favourite Items</span>
                   <div className="podium">
                     <div className="podium-item">
-                      <RiMedalFill className="podium-icon" />
+                      <span>
+                        <span
+                          style={{
+                            fontSize: "20px",
+                            fontWeight: "900",
+                          }}
+                        >
+                          1
+                        </span>
+                        <RiMedalFill fill="#425aff" className="podium-icon" />
+                      </span>
                       <span>{customerFavItems?.[0]?.itemName}</span>
                     </div>
                     <div className="podium-item">
-                      <RiMedalFill className="podium-icon" />
+                      <span>
+                        <span
+                          style={{
+                            fontSize: "20px",
+                            fontWeight: "900",
+                          }}
+                        >
+                          2
+                        </span>
+                        <RiMedalFill
+                          fill="rgb(142 4 4)"
+                          className="podium-icon"
+                        />
+                      </span>
                       <span>{customerFavItems?.[1]?.itemName}</span>
                     </div>
 
                     <div className="podium-item">
-                      <RiMedalFill className="podium-icon" />
+                      <span>
+                        <span
+                          style={{
+                            fontSize: "20px",
+                            fontWeight: "900",
+                          }}
+                        >
+                          3
+                        </span>
+                        <RiMedalFill fill="#fff" className="podium-icon" />
+                      </span>
                       <span>{customerFavItems?.[2]?.itemName}</span>
                     </div>
                   </div>
