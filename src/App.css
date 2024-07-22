@@ -14,7 +14,7 @@
         height: auto !important;
   }
 
-  .menuContainer, .orderCotainer .ant-form, .dashboardContainer .ant-form ,.customerCotainer .ant-form {
+  #login.ant-form,.menuContainer, .orderCotainer .ant-form, .dashboardContainer .ant-form ,.customerCotainer .ant-form {
     width: 100% !important;
   }
   .menuContainer .ant-card-body {
