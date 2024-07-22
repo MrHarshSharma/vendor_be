@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react'
-import SpalashScreen from '../components/SpalashScreen'
-import ToolHeader from '../components/ToolHeader'
-import { useSelector } from 'react-redux'
+import React, { useEffect, useState } from "react";
+import SpalashScreen from "../components/SpalashScreen";
+import ToolHeader from "../components/ToolHeader";
+import { useSelector } from "react-redux";
+import Withlove from "../components/Withlove";
 
-function AppLayout({children}) {
+function AppLayout({ children }) {
   // const [isLoaded, setIsLoaded] = useState(false)
-  const isLoaded = useSelector(state=>state.loadingReducer.loading)
+  const isLoaded = useSelector((state) => state.loadingReducer.loading);
 
   // useEffect(()=>{
   //   setTimeout(()=>{
@@ -14,18 +15,18 @@ function AppLayout({children}) {
   // })
   return (
     <div>
-    <ToolHeader />
-    <div style={{marginTop:'50px'}}>
-    {children}
-    {isLoaded && (
-
-      <div className='loadingScreen'>
-      <SpalashScreen />
+      <ToolHeader />
+      <div style={{ marginTop: "50px" }}>
+        {children}
+        {isLoaded && (
+          <div className="loadingScreen">
+            <SpalashScreen />
+          </div>
+        )}
+        <Withlove/>
       </div>
-      )}
     </div>
-    </div>
-  )
+  );
 }
 
-export default AppLayout
+export default AppLayout;
