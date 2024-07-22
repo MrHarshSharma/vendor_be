@@ -214,7 +214,7 @@ const CustomerRelation = () => {
           </div>
         );
       },
-      width: "20%",
+      width: "10%",
     },
     {
       title: "Items",
@@ -230,7 +230,7 @@ const CustomerRelation = () => {
                 justifyContent: "space-between",
               }}
             >
-              <span>
+              <span style={{minWidth:'300px'}}>
                 {orderItem.quantity} X {orderItem.name}
               </span>
               <span>{orderItem.quantity * orderItem.price}rs</span>
@@ -238,10 +238,10 @@ const CustomerRelation = () => {
           );
         });
       },
-      width: "40%",
+      width: "50%",
     },
     {
-      title: "Total price",
+      title: "Total",
       dataIndex: "order",
       key: "totalPrice",
       render: (order, i) => {
@@ -258,7 +258,7 @@ const CustomerRelation = () => {
       width: "10%",
     },
     {
-      title: "Order feedback",
+      title: "Feedback",
       dataIndex: "orderFeedback",
       key: "feedback",
       render: (orderFeedback, i) => {
@@ -283,7 +283,7 @@ const CustomerRelation = () => {
                       width: "70%",
                     }}
                   >
-                    <span> {feedbackItem?.itemName}</span>
+                    <span style={{minWidth:'300px'}}> {feedbackItem?.itemName}</span>
                     <span>{feedbackItem.comment}</span>
                   </div>
                   <div
