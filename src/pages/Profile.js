@@ -7,13 +7,17 @@ import { db } from "../firebase/setup";
 import { doc, getDoc } from "firebase/firestore";
 import QRCode from 'qrcode.react';
 import { variables } from "../constants/variables";
-import { useDispatch } from "react-redux";
-import { setPageLoading } from "../actions/storeAction";
+
+
+import { useAtom, useSetAtom } from "jotai";
+import { pageLoading } from "../constants/stateVariables";
 
 
 function Profile() {
+  const isPageLoading= useSetAtom(pageLoading);
 
-  const dispatch = useDispatch();
+
+
 
   const user = JSON.parse(localStorage.getItem("user"));
   const [storeDetails, setStoreDetails] = useState(null);
@@ -37,7 +41,7 @@ function Profile() {
     } catch (error) {
       console.error("Error fetching document:", error);
     }finally{
-      dispatch(setPageLoading({payload:false}))
+isPageLoading(false)
     }
   };
 
@@ -84,6 +88,7 @@ function Profile() {
           </div>
         )}
       </div>
+
     </AppLayout>
   );
 }

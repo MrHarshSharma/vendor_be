@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 
-import { useDispatch, useSelector } from "react-redux";
+
 
 import { db } from "../firebase/setup";
 import AppLayout from "./AppLayout";
@@ -41,12 +41,15 @@ import {
   acceptOrderVariables,
 } from "../constants/variables";
 import { colors } from "../constants/colors";
-import { setPageLoading } from "../actions/storeAction";
+import { useAtom, useSetAtom } from "jotai";
+import { pageLoading, store } from "../constants/stateVariables";
+
 const Orders = () => {
+  const isPageLoading = useSetAtom(pageLoading)
   const componentRef = useRef();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const storeDetails = useSelector((state) => state.storeReducer.store);
-  const dispatch = useDispatch()
+  const [storeDetails] = useAtom(store)
+
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -92,7 +95,7 @@ const Orders = () => {
       });
 
       setOrders(ordersList);
-      dispatch(setPageLoading({payload:false}))
+isPageLoading(false)
 
       const grandTotal_order = ordersList.reduce((total, order) => {
         const orderTotal = order.order.reduce((orderSum, item) => {

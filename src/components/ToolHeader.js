@@ -18,20 +18,24 @@ import { TbDeviceAnalytics } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import { HiUserGroup } from "react-icons/hi";
 import { checkIsUserPlanExpired } from "../constants/commonFunctions";
-import { useDispatch } from "react-redux";
-import { setPageLoading } from "../actions/storeAction";
+
+import { useSetAtom } from "jotai";
+import { pageLoading } from "../constants/stateVariables";
+
 
 const { Header, Content } = Layout;
 
 const MainMenu = () => {
+  const isPageLoading = useSetAtom(pageLoading)
   let user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+
   const [hideMenu, setHideMenu] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(window.pageYOffset);
 
   useEffect(() => {
     fetchUserDocument();
+    isPageLoading(true)
   }, []);
 
   const fetchUserDocument = async () => {
@@ -77,7 +81,7 @@ const MainMenu = () => {
   }, []);
 
   const navigateTo = (route) => {
-    dispatch(setPageLoading({payload:true}))
+    isPageLoading(true)
     navigate(route);
   }
 

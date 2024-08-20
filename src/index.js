@@ -17,10 +17,11 @@ import Protected from "./components/Protected";
 import Profile from "./pages/Profile";
 import MenuPage from "./pages/MenuPage";
 import Orders from "./pages/Orders";
-import { Provider } from 'react-redux'
-import store from "./store";
-import CustomerRelation from "./pages/CustomerRelation";
 
+import CustomerRelation from "./pages/CustomerRelation";
+import { Provider, createStore } from "jotai";
+
+const myStore = createStore();
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -38,10 +39,11 @@ const router = createBrowserRouter(
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-  <Provider store={store}>
-    <ConfigProvider theme={{ token: { colorPrimary: "#00b96b" } }}>
-      <RouterProvider router={router} />
-    </ConfigProvider>
+  
+    <Provider store={myStore}>
+      <ConfigProvider theme={{ token: { colorPrimary: "#00b96b" } }}>
+        <RouterProvider router={router} />
+      </ConfigProvider>
     </Provider>
   </React.StrictMode>
 );

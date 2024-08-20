@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import SpalashScreen from "../components/SpalashScreen";
 import ToolHeader from "../components/ToolHeader";
-import { useSelector } from "react-redux";
+
 import Withlove from "../components/Withlove";
+import { useAtom } from "jotai";
+import { pageLoading } from "../constants/stateVariables";
 
 function AppLayout({ children }) {
   // const [isLoaded, setIsLoaded] = useState(false)
-  const isLoaded = useSelector((state) => state.loadingReducer.loading);
+  const [isPageLoading] = useAtom(pageLoading);
 
   // useEffect(()=>{
   //   setTimeout(()=>{
@@ -18,7 +20,7 @@ function AppLayout({ children }) {
       <ToolHeader />
       <div style={{ marginTop: "50px" }}>
         {children}
-        {isLoaded && (
+        {isPageLoading && (
           <div className="loadingScreen">
             <SpalashScreen />
           </div>

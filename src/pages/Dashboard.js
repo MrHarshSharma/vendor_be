@@ -10,19 +10,24 @@ import {
   getDownloadURL,
   uploadBytes,
 } from "firebase/storage";
-import { useDispatch, useSelector } from "react-redux";
+
 
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/setup";
 import { useNavigate } from "react-router-dom";
 import { SketchPicker } from "react-color";
-import { addStore, setPageLoading } from "../actions/storeAction";
+
+import { useAtom, useSetAtom } from "jotai";
+import {  pageLoading, store } from "../constants/stateVariables";
 
 function Dashboard() {
+  const updateTheStore = useSetAtom(store)
+  const updateTheLoading = useSetAtom(pageLoading)
+  const [detailsStore] = useAtom(store)
+
   const { Option } = Select;
-  const [storeDetails, setStoreDetails] = useState({});
   let user = JSON.parse(localStorage.getItem("user"));
-  let dispatch = useDispatch();
+
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState(null);
   const [currentLogo, setCurrentLogo] = useState(null);
@@ -31,7 +36,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const [primaryColor, setPrimaryColor] = useState("#ffffff");
   const [secondaryColor, setSecondaryColor] = useState("#ffffff");
-  const [sudoState, setSudoState] = useState(0)
+
   
   const fetchConfigstore = async () => {
     try {
@@ -43,10 +48,8 @@ function Dashboard() {
       const docSnap = await getDoc(configRef);
 
       if (docSnap.exists()) {
-        // console.log("this user data", docSnap.data());
         let wholeData = docSnap.data();
-        setStoreDetails(wholeData);
-        dispatch(addStore(docSnap.data()));
+        updateTheStore(wholeData)
         setPrimaryColor(wholeData.primaryColor)
         setSecondaryColor(wholeData.secondaryColor)
         setCurrentLogo(wholeData.logo)
@@ -64,7 +67,7 @@ function Dashboard() {
     } catch (error) {
       console.error("Error fetching document:", error);
     }finally{
-      dispatch(setPageLoading({payload:false}))
+      updateTheLoading(false)
     }
   };
 
@@ -188,9 +191,9 @@ function Dashboard() {
     //   setImageUrl(URL.createObjectURL(file));
     // }, 0);
   };
-
   return (
     <AppLayout>
+
       <div className="app-container dashboardContainer">
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <h1 className="app-bold">Basic details</h1>

@@ -18,14 +18,17 @@ import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import * as XLSX from 'xlsx';
 
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useDispatch } from "react-redux";
-import { setPageLoading } from "../actions/storeAction";
+
+import { useSetAtom } from "jotai";
+import { pageLoading } from "../constants/stateVariables";
+
 
 const { Option } = Select;
 
 const MenuPage = () => {
+  const isPageLoading = useSetAtom(pageLoading)
   const storage = getStorage();
-  const dispatch = useDispatch();
+
   const [loading, setLoading] = useState(false);
   let user = JSON.parse(localStorage.getItem("user"));
   const [dbCat, setDbCat] = useState([]);
@@ -80,7 +83,7 @@ const MenuPage = () => {
     } catch (error) {
       console.error("Error fetching document:", error);
     } finally {
-      dispatch(setPageLoading({payload:false}))
+isPageLoading(false)
     }
   };
 
@@ -253,7 +256,7 @@ const MenuPage = () => {
 
   const handleSubmit = async () => {
     setLoading(true);
-    dispatch(setPageLoading({payload:true}))
+isPageLoading(true)
     try {
       for (const category in categories) {
         for (const item of categories[category]) {
@@ -301,7 +304,7 @@ const MenuPage = () => {
       message.error("Error updating Menu");
       setLoading(false);
     } finally {
-      dispatch(setPageLoading({payload:false}))
+isPageLoading(false)
     }
   };
 

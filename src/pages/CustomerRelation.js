@@ -10,11 +10,14 @@ import {
 import { db } from "../firebase/setup";
 import { Form, Table } from "antd";
 import { RiMedalFill } from "react-icons/ri";
-import { useDispatch } from "react-redux";
-import { setPageLoading } from "../actions/storeAction";
+
+import { useSetAtom } from "jotai";
+import { pageLoading } from "../constants/stateVariables";
+
 
 const CustomerRelation = () => {
-  const dispatch = useDispatch();
+  const isPageLoading = useSetAtom (pageLoading)
+
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(undefined);
   const [customerOrders, setCustomerOrders] = useState([]);
@@ -43,7 +46,7 @@ const CustomerRelation = () => {
       } catch (error) {
         console.error("Error fetching documents: ", error);
       } finally {
-        dispatch(setPageLoading({ payload: false }));
+isPageLoading(false )
       }
     };
 
@@ -53,7 +56,7 @@ const CustomerRelation = () => {
 
   useEffect(() => {
     if (selectedCustomer !== undefined) {
-      dispatch(setPageLoading({ payload: true }));
+      isPageLoading(true)
       fetchCustomerData(selectedCustomer.email);
     }
   }, [selectedCustomer]);
@@ -118,7 +121,7 @@ const CustomerRelation = () => {
     } catch (error) {
       console.error("Error fetching documents: ", error);
     } finally {
-      dispatch(setPageLoading({ payload: false }));
+isPageLoading(false);
     }
   };
 
