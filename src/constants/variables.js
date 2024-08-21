@@ -1,6 +1,6 @@
 export const variables = {
     deployedURL :'https://cherishchow.vercel.app',
-    isDeployed : true
+    isDeployed : false
 }
 
 export const feedbackFormVariables = {

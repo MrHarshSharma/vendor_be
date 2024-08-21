@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AppLayout from "./AppLayout";
-import { Form, Input, Button, Select, Upload, message } from "antd";
+import { Form, Input, Button, Select, Upload, message, Switch } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { generateGUID } from "../utils";
 import {
@@ -59,6 +59,7 @@ function Dashboard() {
         form.setFieldsValue({ secondarycolor: wholeData.secondaryColor }); 
         form.setFieldsValue({ tagline: wholeData.tagline }); 
         form.setFieldsValue({ subtagline: wholeData.subtagline }); 
+        form.setFieldsValue({ tables: wholeData.tables }); 
         
       } else {
         console.log("No such document!");
@@ -120,7 +121,12 @@ function Dashboard() {
 
   const handleSubmit = async (values) => {
     setLoading(true);
-    let { restaurantType, restaurantName, tagline, subtagline } = values;
+    let { restaurantType, restaurantName, tagline, subtagline, tables } = values;
+    if(tables == ''){
+      tables = 0
+    }else{
+      tables = parseInt(tables)
+    }
     console.log(values);
 
     let logoURL='';
@@ -146,7 +152,8 @@ function Dashboard() {
       primaryColor,
       secondaryColor,
       tagline,
-      subtagline
+      subtagline,
+      tables
     };
     }else{
        configStoreData = {
@@ -156,7 +163,8 @@ function Dashboard() {
         primaryColor,
         secondaryColor,
         tagline,
-        subtagline
+        subtagline,
+        tables
       };
     }
 
@@ -232,6 +240,9 @@ function Dashboard() {
           >
             <Input />
           </Form.Item>
+          <Form.Item name='tables' label="Tables">
+          <Input />
+      </Form.Item>
           <div style={{ display: "flex" }}>
             <Form.Item
               name="primarycolor"

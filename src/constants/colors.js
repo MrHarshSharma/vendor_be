@@ -3,4 +3,5 @@ export const colors = {
     warning:'#f1f199', //yellow
     reject:'#b52e2e', //red
     disabled:'#989898', //grey
+    orange:'#FFA500'
 }

@@ -1,7 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
 
-
-
 import { db } from "../firebase/setup";
 import AppLayout from "./AppLayout";
 import useSound from "use-sound";
@@ -45,10 +43,10 @@ import { useAtom, useSetAtom } from "jotai";
 import { pageLoading, store } from "../constants/stateVariables";
 
 const Orders = () => {
-  const isPageLoading = useSetAtom(pageLoading)
+  const isPageLoading = useSetAtom(pageLoading);
   const componentRef = useRef();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [storeDetails] = useAtom(store)
+  const [storeDetails] = useAtom(store);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -69,59 +67,58 @@ const Orders = () => {
   useEffect(() => {
     try {
       const ordersRef = collection(db, "orders");
-    const q = query(
-      ordersRef,
-      where("storeId", "==", user.uid),
-      orderBy("timeStamp", "desc")
-    );
+      const q = query(
+        ordersRef,
+        where("storeId", "==", user.uid),
+        orderBy("timeStamp", "desc")
+      );
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const ordersList = [];
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const ordersList = [];
 
-      let isNewDataAdded = false;
+        let isNewDataAdded = false;
 
-      querySnapshot.docChanges().forEach((change) => {
-        console.log(change);
-        if (change.type === "added") {
-          isNewDataAdded = true;
-        }
-      });
-
-      querySnapshot.forEach((doc) => {
-        ordersList.push({
-          id: doc.id,
-          ...doc.data(),
+        querySnapshot.docChanges().forEach((change) => {
+          console.log(change);
+          if (change.type === "added") {
+            isNewDataAdded = true;
+          }
         });
+
+        querySnapshot.forEach((doc) => {
+          ordersList.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        setOrders(ordersList);
+        isPageLoading(false);
+
+        const grandTotal_order = ordersList.reduce((total, order) => {
+          const orderTotal = order.order.reduce((orderSum, item) => {
+            return orderSum + parseFloat(item.price) * item.quantity;
+          }, 0);
+          return total + orderTotal;
+        }, 0);
+        setGrandTotal(grandTotal_order);
+
+        if (isNewDataAdded) {
+          if (document.hidden) {
+            // Page is not visible, play sound
+            playNewOrderSound();
+          } else {
+            // Page is visible, play sound
+            playNewOrderSound();
+          }
+        }
       });
 
-      setOrders(ordersList);
-isPageLoading(false)
-
-      const grandTotal_order = ordersList.reduce((total, order) => {
-        const orderTotal = order.order.reduce((orderSum, item) => {
-          return orderSum + parseFloat(item.price) * item.quantity;
-        }, 0);
-        return total + orderTotal;
-      }, 0);
-      setGrandTotal(grandTotal_order);
-
-      if (isNewDataAdded) {
-        if (document.hidden) {
-          // Page is not visible, play sound
-          playNewOrderSound();
-        } else {
-          // Page is visible, play sound
-          playNewOrderSound();
-        }
-      }
-    });
-
-    return () => unsubscribe(); // Unsubscribe from snapshot listener on unmount
+      return () => unsubscribe(); // Unsubscribe from snapshot listener on unmount
     } catch (error) {
-        console.error(error)
+      console.error(error);
     } finally {
     }
-    
   }, [playNewOrderSound]);
 
   const formatTimestamp = (timestamp) => {
@@ -193,7 +190,14 @@ isPageLoading(false)
   };
 
   const acceptOrder = async (order) => {
-    sendEmail('accept order',order.customer.displayName,order.customer.email,`Your order will be server in some time`, order, acceptOrderVariables)
+    sendEmail(
+      "accept order",
+      order.customer.displayName,
+      order.customer.email,
+      `Your order will be server in some time`,
+      order,
+      acceptOrderVariables
+    );
 
     try {
       const orderRef = doc(db, "orders", order.id);
@@ -258,15 +262,26 @@ isPageLoading(false)
       console.error("Error updating document: ", error);
     }
   };
+
+    const hexToRgba = (hex, alpha) => {
+          const r = parseInt(hex.slice(1, 3), 16);
+          const g = parseInt(hex.slice(3, 5), 16);
+          const b = parseInt(hex.slice(5, 7), 16);
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
+
   return (
     <AppLayout>
-      <div className="app-container orderCotainer" style={{ padding: "20px 50px" }}>
+      <div
+        className="app-container orderCotainer"
+        style={{ padding: "20px 50px" }}
+      >
         <Modal
           title="Bill preview"
           open={isModalOpen}
           onOk={handlePrint}
           onCancel={handleCancel}
-          width={'50%'}
+          width={"50%"}
         >
           <Bill order={toPrintOrder} ref={componentRef} />
         </Modal>
@@ -302,11 +317,13 @@ isPageLoading(false)
                     borderRadius: "5px",
                     padding: "20px",
                     backgroundColor:
-                      order?.orderStatus == "new"
-                        ? storeDetails.primaryColor
-                        : order?.orderStatus == "accept"
-                        ? colors.warning
-                        : order?.orderStatus == "cancle" ? colors.reject:'',
+                      order?.orderStatus === "new"
+                        ? hexToRgba(colors.orange,0.5)
+                        : order?.orderStatus === "accept"
+                        ? hexToRgba(colors.warning,0.5)
+                        : order?.orderStatus === "cancle"
+                        ? hexToRgba(colors.reject,0.5)
+                        : "",
                     position: "relative",
                   }}
                 >
@@ -350,7 +367,7 @@ isPageLoading(false)
                             background: colors.reject,
                             borderRadius: "3px",
                           }}
-                          onClick={()=>rejectOrder(order)}
+                          onClick={() => rejectOrder(order)}
                         >
                           Reject
                         </span>
@@ -374,7 +391,6 @@ isPageLoading(false)
                         </span>
                       </>
                     )}
-                    
                   </div>
                   <div style={{ display: "flex" }} className="orderheader">
                     <div
@@ -385,17 +401,26 @@ isPageLoading(false)
                         width: "50%",
                       }}
                     >
-                      {/* <span>{order.id}</span> */}
+                      <span>{order?.table}</span>
                       <span>{order.customer?.displayName}</span>
-                      <span style={{display:'flex', flexDirection:'column' }}>
-                      <span>
-                        {new Date(order.timeStamp).toLocaleString().split(',')[0]}
+                      <span
+                        style={{ display: "flex", flexDirection: "column" }}
+                      >
+                        <span>
+                          {
+                            new Date(order.timeStamp)
+                              .toLocaleString()
+                              .split(",")[0]
+                          }
                         </span>
-                      <span>
-                      {new Date(order.timeStamp).toLocaleString().split(',')[1]}
+                        <span>
+                          {
+                            new Date(order.timeStamp)
+                              .toLocaleString()
+                              .split(",")[1]
+                          }
                         </span>
-                        
-                        </span>
+                      </span>
                     </div>
                     <div
                       style={{
