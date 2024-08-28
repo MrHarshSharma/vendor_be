@@ -4,6 +4,7 @@ import {
   Firestore,
   collection,
   getDocs,
+  orderBy,
   query,
   where,
 } from "firebase/firestore";
@@ -82,7 +83,8 @@ isPageLoading(false )
             collection(db, "feedbacks"),
             where("storeId", "==", user.uid),
             where("orderId", "==", orderDoc.id),
-            where("customerId", "==", orderDoc.customer.uid)
+            where("customerId", "==", orderDoc.customer.uid),
+            
           );
           const feedbackSnapshot = await getDocs(feedbackQuery);
           const feedbackData = feedbackSnapshot.docs.map((doc) => doc.data());
@@ -94,7 +96,7 @@ isPageLoading(false )
         });
 
         const ordersWithFeedback = await Promise.all(feedbackPromises);
-        setCustomerOrders(ordersWithFeedback);
+        setCustomerOrders(ordersWithFeedback.reverse());
         console.log(ordersWithFeedback);
         const favItems = findCustomerFavItems(ordersWithFeedback);
         setCustomerFavItems(favItems);
@@ -175,7 +177,7 @@ isPageLoading(false);
 
     return (
       <div style={{ marginTop: "20px" }}>
-        <span>Other frequent items orders</span>
+        <i style={{marginBottom:'10px'}}>Other frequent orders</i>
         <div>
           {foodArray.map(([foodItem, count], i) => (
             <div
@@ -241,7 +243,7 @@ isPageLoading(false);
           );
         });
       },
-      width: "50%",
+      width: "20%",
     },
     {
       title: "Total",
@@ -277,6 +279,7 @@ isPageLoading(false);
                     flexDirection: "row",
                     borderBottom: "1px solid #e2e2e2",
                     justifyContent: "space-between",
+
                   }}
                 >
                   <div
@@ -291,7 +294,7 @@ isPageLoading(false);
                   </div>
                   <div
                     style={{
-                      width: "30%",
+                      width: "65px",
                       display: "flex",
                       justifyContent: "end",
                     }}
@@ -306,7 +309,7 @@ isPageLoading(false);
           </div>
         );
       },
-      width: "30%",
+      width: "20%",
     },
   ];
 const userSummary = () =>{
@@ -330,7 +333,7 @@ const userSummary = () =>{
                   justifyContent: "space-between",
                 }}
               >
-                <span>Visits: {customerOrders.length} times </span>
+                <span>Visits: {customerOrders.length} </span>
                 <span>Spent: {calculateGrandTotal(customerOrders)}rs</span>
               </div>
               {customerFavItems.length > 0 && (
@@ -398,6 +401,8 @@ const userSummary = () =>{
                   border: "1px solid #e2e2e2",
                   padding: "10px",
                   borderRadius: "5px",
+                  maxHeight:"147px",
+                  overflow:'auto'
                 }}
               >
                 <span>Most ordered item : {favoriteItem}</span>
@@ -456,7 +461,7 @@ const userSummary = () =>{
               overflow:'auto'
             }}
           >
-            <div style={{ width: 'auto' }}>
+            <div style={{ width: '100%' }}>
               <Table
                 dataSource={customerOrders}
                 columns={columns}

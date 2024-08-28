@@ -74,6 +74,7 @@ const MobileNumberLogin = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+   
       const userRef = doc(db, "users", user.uid);
       const querySnapshot = await getDocs(collection(db, "authUser"));
       const typesData = querySnapshot.docs.map((doc) => ({
