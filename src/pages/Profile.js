@@ -144,7 +144,7 @@ function Profile() {
                   href={`${
                     variables.isDeployed
                       ? variables.deployedURL
-                      : "http://localhost:3001"
+                      : "http://localhost:3000"
                   }/menu/${user.uid}/0`}
                   target="_blank"
                 >
@@ -216,7 +216,7 @@ function Profile() {
                   value={`${
                     variables.isDeployed
                       ? variables.deployedURL
-                      : "http://localhost:3001"
+                      : "http://localhost:3000"
                   }/menu/${user.uid}`}
                 />
                 <hr style={{ width: "100%" }} />
@@ -224,7 +224,7 @@ function Profile() {
                   href={`${
                     variables.isDeployed
                       ? variables.deployedURL
-                      : "http://localhost:3001"
+                      : "http://localhost:3000"
                   }/menu/${user.uid}/0`}
                   target="_blank"
                 >

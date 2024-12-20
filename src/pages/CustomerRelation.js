@@ -358,7 +358,7 @@ const userSummary = () =>{
                         </span>
                         <RiMedalFill fill="#425aff" className="podium-icon" />
                       </span>
-                      <span>{customerFavItems?.[0]?.itemName}</span>
+                      <span style={{fontSize:'14px'}}>{customerFavItems?.[0]?.itemName}</span>
                     </div>
                     <div className="podium-item">
                       <span>
@@ -375,7 +375,7 @@ const userSummary = () =>{
                           className="podium-icon"
                         />
                       </span>
-                      <span>{customerFavItems?.[1]?.itemName}</span>
+                      <span style={{fontSize:'14px'}}>{customerFavItems?.[1]?.itemName}</span>
                     </div>
 
                     <div className="podium-item">
@@ -390,7 +390,7 @@ const userSummary = () =>{
                         </span>
                         <RiMedalFill fill="#fff" className="podium-icon" />
                       </span>
-                      <span>{customerFavItems?.[2]?.itemName}</span>
+                      <span style={{fontSize:'14px'}}>{customerFavItems?.[2]?.itemName}</span>
                     </div>
                   </div>
                 </div>

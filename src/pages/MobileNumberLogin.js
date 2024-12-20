@@ -95,10 +95,11 @@ const MobileNumberLogin = () => {
           return;
         }
         message.success(`Login successful`);
-      } else {
-        message.error(`${user.email} is not authorized to login`);
-        return;
-      }
+      } 
+      // else {
+      //   message.error(`${user.email} is not authorized to login`);
+      //   return;
+      // }
 
       const userData = {
         uid: user.uid,
@@ -116,6 +117,7 @@ const MobileNumberLogin = () => {
       localStorage.setItem("user", JSON.stringify(userData));
       navigate("/");
       console.log("User signed in:", user);
+      message.success(`Login successful for ${user.email}`);
       return user;
     } catch (error) {
       console.error("Error signing in with Google:", error);
