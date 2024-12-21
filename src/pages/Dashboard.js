@@ -202,7 +202,7 @@ function Dashboard() {
   return (
     <AppLayout>
 
-      <div className="app-container dashboardContainer">
+      <div className="app-container dashboardContainer" style={{'overflow':'auto'}}>
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <h1 className="app-bold">Basic details</h1>
           <Form.Item
