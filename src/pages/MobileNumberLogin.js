@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { provider, db, auth } from "../firebase/setup";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 
-import moment from "moment";
 import { checkIsUserPlanExpired } from "../constants/commonFunctions";
 
 const { Title } = Typography;
@@ -19,24 +18,12 @@ const MobileNumberLogin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [OTPloading, setOTPLoading] = useState(false);
-  const [phone, setPhone] = useState("");
   const [user, setUser] = useState(null);
   const [isOtpSent, setOtpSent] = useState(false);
-  const googleSignIn = async () => {
-    try {
-      const results = await signInWithPopup(auth, provider);
-      console.log(results);
-      localStorage.setItem("token", results.user.accessToken);
-      localStorage.setItem("user", JSON.stringify(results.user));
-      navigate("/");
-    } catch (e) {
-      console.error(e);
-    }
-  };
+
   const sendOtp = async (values) => {
     try {
       setLoading(true);
-      setPhone(values.mobileNumber);
       const recaptcha = new RecaptchaVerifier(auth, "recapthca", {});
       const confirmation = await signInWithPhoneNumber(
         auth,

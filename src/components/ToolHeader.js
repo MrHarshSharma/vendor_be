@@ -1,20 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Menu, Layout, message } from "antd";
 import { db } from '../firebase/setup'
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 import {
-  ShoppingCartOutlined,
   UserOutlined,
   HomeOutlined,
-  HeartOutlined,
-  ShopOutlined,
   ProductOutlined,
-MenuOutlined,
-  SettingOutlined,
+  MenuOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
-import { TbDeviceAnalytics } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 import { HiUserGroup } from "react-icons/hi";
 import { checkIsUserPlanExpired } from "../constants/commonFunctions";
@@ -23,7 +18,7 @@ import { useSetAtom } from "jotai";
 import { pageLoading } from "../constants/stateVariables";
 
 
-const { Header, Content } = Layout;
+const { Header } = Layout;
 
 const MainMenu = () => {
   const isPageLoading = useSetAtom(pageLoading)
@@ -36,6 +31,7 @@ const MainMenu = () => {
   useEffect(() => {
     fetchUserDocument();
     isPageLoading(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUserDocument = async () => {
@@ -62,18 +58,19 @@ const MainMenu = () => {
     }
   };
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     const currentScrollPos = window.pageYOffset;
     const visible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
     setHideMenu(visible);
     setPrevScrollPos(currentScrollPos);
-  };
+  }, [prevScrollPos]);
+
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [prevScrollPos]);
+  }, [handleScroll]);
 
   useEffect(() => {
     setHideMenu(true);

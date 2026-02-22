@@ -6,8 +6,6 @@ import {
   Input,
   Button,
   Card,
-  Row,
-  Col,
   message,
   Checkbox,
   Upload,
@@ -93,6 +91,7 @@ const MenuPage = () => {
 
   useEffect(() => {
     fetchConfigstore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const vegNonVegoptions = [
@@ -206,7 +205,7 @@ const MenuPage = () => {
               onPreview={handlePreview}
               beforeUpload={() => false}
             >
-              {item.fileList.length == 0 && "Upload"}
+              {item.fileList.length === 0 && "Upload"}
             </Upload>
           </div>
         </div>
@@ -243,11 +242,9 @@ const MenuPage = () => {
   const handleChange = (value) => {
     setSelectedCategories(value);
     let temp = {};
-    value.map((val) => {
+    value.forEach((val) => {
       temp[val] = dbCat[val] ? dbCat[val] : [];
-      // console.log(categories[val])
     });
-    // setCategories();
     setCategories(temp);
   };
 

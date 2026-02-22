@@ -3,9 +3,8 @@ import AppLayout from "./AppLayout";
 import {
   UserOutlined,
   MailOutlined,
-  DownCircleOutlined,
 } from "@ant-design/icons";
-import { Avatar, Card, Divider, Modal, QRCode, Table } from "antd";
+import { Avatar, Divider, Modal, QRCode } from "antd";
 
 import { db } from "../firebase/setup";
 import { doc, getDoc } from "firebase/firestore";
@@ -14,8 +13,6 @@ import { variables } from "../constants/variables";
 
 import { useAtom, useSetAtom } from "jotai";
 import { pageLoading, store } from "../constants/stateVariables";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
 import { useReactToPrint } from "react-to-print";
 
 function Profile() {
@@ -53,14 +50,8 @@ function Profile() {
 
   useEffect(() => {
     fetchConfigstore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const [url, setUrl] = useState("");
-  const [qrCodeValue, setQRCodeValue] = useState("");
-
-  const generateQRCode = () => {
-    setQRCodeValue(url);
-  };
 
   // const handleGenerateAndDownload = async () => {
 
@@ -147,6 +138,7 @@ function Profile() {
                       : "http://localhost:3000"
                   }/menu/${user.uid}/0`}
                   target="_blank"
+                  rel="noreferrer"
                 >
                   click for menu
                 </a>
@@ -227,6 +219,7 @@ function Profile() {
                       : "http://localhost:3000"
                   }/menu/${user.uid}/0`}
                   target="_blank"
+                  rel="noreferrer"
                 >
                   click for menu
                 </a>

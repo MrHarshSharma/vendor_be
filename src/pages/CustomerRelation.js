@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import AppLayout from "./AppLayout";
 import {
-  Firestore,
   collection,
   getDocs,
-  orderBy,
   query,
   where,
 } from "firebase/firestore";
@@ -53,6 +51,7 @@ isPageLoading(false )
 
     fetchCustomers();
     setTableHeights(window.innerHeight - 300);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -60,6 +59,7 @@ isPageLoading(false )
       isPageLoading(true)
       fetchCustomerData(selectedCustomer.email);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCustomer]);
 
   const fetchCustomerData = async (email) => {
@@ -438,6 +438,7 @@ const userSummary = () =>{
             >
               <img
                 src={customer.photoURL}
+                alt={customer.displayName}
                 style={{ width: "40px", borderRadius: "100%" }}
               />
               <span>{customer.displayName}</span>

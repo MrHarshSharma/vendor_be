@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import AppLayout from "./AppLayout";
-import { Form, Input, Button, Select, Upload, message, Switch } from "antd";
+import { Form, Input, Button, Select, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { generateGUID } from "../utils";
 import {
   getStorage,
   ref,
   uploadBytesResumable,
   getDownloadURL,
-  uploadBytes,
 } from "firebase/storage";
 
 
@@ -17,13 +15,12 @@ import { db } from "../firebase/setup";
 import { useNavigate } from "react-router-dom";
 import { SketchPicker } from "react-color";
 
-import { useAtom, useSetAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import {  pageLoading, store } from "../constants/stateVariables";
 
 function Dashboard() {
   const updateTheStore = useSetAtom(store)
   const updateTheLoading = useSetAtom(pageLoading)
-  const [detailsStore] = useAtom(store)
 
   const { Option } = Select;
   let user = JSON.parse(localStorage.getItem("user"));
@@ -74,6 +71,7 @@ function Dashboard() {
 
   useEffect(() => {
     fetchConfigstore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handlePrimaryColorChange = (color) => {
@@ -122,7 +120,7 @@ function Dashboard() {
   const handleSubmit = async (values) => {
     setLoading(true);
     let { restaurantType, restaurantName, tagline, subtagline, tables } = values;
-    if(tables == ''){
+    if(tables === ''){
       tables = 0
     }else{
       tables = parseInt(tables)

@@ -5,22 +5,16 @@ import AppLayout from "./AppLayout";
 import useSound from "use-sound";
 import {
   Form,
-  Input,
-  Button,
-  Select,
-  Upload,
   message,
   Tooltip,
   Modal,
 } from "antd";
-import { MdMarkEmailRead } from "react-icons/md";
 import emailjs from "emailjs-com";
 
 import {
   collection,
   doc,
   getDoc,
-  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -50,10 +44,6 @@ const Orders = () => {
 
   const showModal = () => {
     setIsModalOpen(true);
-  };
-
-  const handleOk = () => {
-    setIsModalOpen(false);
   };
 
   const handleCancel = () => {
@@ -119,12 +109,8 @@ const Orders = () => {
       console.error(error);
     } finally {
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playNewOrderSound]);
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleString(); // Format to a readable string
-  };
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
@@ -334,7 +320,7 @@ const Orders = () => {
                       gap: "10px",
                     }}
                   >
-                    {order?.orderStatus == "complete" && (
+                    {order?.orderStatus === "complete" && (
                       <Tooltip title="Print bill">
                         <span
                           onClick={() => {
@@ -347,7 +333,7 @@ const Orders = () => {
                         </span>
                       </Tooltip>
                     )}
-                    {order?.orderStatus == "new" && (
+                    {order?.orderStatus === "new" && (
                       <>
                         <span
                           style={{
@@ -374,7 +360,7 @@ const Orders = () => {
                       </>
                     )}
 
-                    {order?.orderStatus == "accept" && (
+                    {order?.orderStatus === "accept" && (
                       <>
                         <span
                           style={{
