@@ -7,74 +7,83 @@
   .container {
     padding: 10px;
   }
-  .customerCotainer{
+
+  .customerCotainer {
 
     /* background: red !important; */
-        flex-direction: column;
-        height: auto !important;
+    flex-direction: column;
+    height: auto !important;
   }
 
-  #login.ant-form,.menuContainer, .orderCotainer .ant-form, .dashboardContainer .ant-form ,.customerCotainer .ant-form {
+  #login.ant-form,
+  .menuContainer,
+  .orderCotainer .ant-form,
+  .dashboardContainer .ant-form,
+  .customerCotainer .ant-form {
     width: 100% !important;
   }
+
   .menuContainer .ant-card-body {
     padding: 5px !important;
   }
 
   .orderCotainer {
-    padding:10px !important;
-  }
-  .orderCotainer .ant-form{
     padding: 10px !important;
   }
 
-  .menuInputs, .orderheader{
+  .orderCotainer .ant-form {
+    padding: 10px !important;
+  }
+
+  .menuInputs,
+  .orderheader {
     flex-direction: column !important;
   }
 
-  .orderheader > div{
+  .orderheader>div {
     width: 100% !important;
     justify-content: space-between;
   }
 
-  .orderheader > div:nth-child(2){
+  .orderheader>div:nth-child(2) {
     margin-top: 20px;
   }
 
- 
+
 }
 
 
-.productListContainer .ant-card-body{
+.productListContainer .ant-card-body {
   padding: 10px !important;
 }
 
-.headerContainer{
+.headerContainer {
   position: sticky;
-    bottom: 0;
-    border-bottom-right-radius: 15px;
-    border-bottom-left-radius: 15px;
-    height: 50px !important;
-    padding: 0 !important;
-    overflow: hidden;
+  bottom: 0;
+  border-bottom-right-radius: 15px;
+  border-bottom-left-radius: 15px;
+  height: 50px !important;
+  padding: 0 !important;
+  overflow: hidden;
 }
 
 .headerContainer ul {
   height: 50px !important;
 }
-.headerContainer li{
+
+.headerContainer li {
   height: 50px;
   display: flex !important;
   align-items: center;
   line-height: normal !important;
 }
 
-.hori_rule{
+.hori_rule {
   width: 80%;
-    /* color: #d9d9d9; */
-    height: 1px;
-    background: #e2e2e2;
-    border: none;
+  /* color: #d9d9d9; */
+  height: 1px;
+  background: #e2e2e2;
+  border: none;
 }
 
 .profile-container {
@@ -91,12 +100,12 @@
   /* Add more styles as needed */
 }
 
-.loadingScreen{
+.loadingScreen {
   position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 10000;
-    backdrop-filter: blur(8px);
+  top: 0;
+  width: 100%;
+  z-index: 10000;
+  backdrop-filter: blur(8px);
 }
 
 
@@ -106,8 +115,9 @@
   align-items: center;
   height: 100vh;
   padding: 10px;
-  gap:20px;
-  background-color: #f0f2f5; /* Optional: Adds a light background color */
+  gap: 20px;
+  background-color: #f0f2f5;
+  /* Optional: Adds a light background color */
 }
 
 .ant-form {
@@ -115,23 +125,23 @@
   padding: 24px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 80%;
+  width: 100%;
 }
 
 
 
-.CustomerDiv{
-  display:flex ;
-  flex-direction:row;
-   align-items:center; 
-   gap:10px;
-   cursor: pointer;
-   transition: .3s;
-   border-radius: 5px;
-   padding: 10px;
+.CustomerDiv {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: .3s;
+  border-radius: 5px;
+  padding: 10px;
 }
 
-.CustomerDiv:hover{
+.CustomerDiv:hover {
   background-color: #44b96b8c;
 }
 
@@ -139,8 +149,10 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start; /* Align items to the bottom */
-  gap: 20px; /* Adjust gap between podiums */
+  align-items: flex-start;
+  /* Align items to the bottom */
+  gap: 20px;
+  /* Adjust gap between podiums */
   margin-top: 10px;
   /* height: 50px; Adjust height as needed */
 }
@@ -149,33 +161,40 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap:10px;
+  gap: 10px;
   justify-content: flex-start;
   padding: 10px;
   border-radius: 10px;
   background-color: #f0f0f0;
-  width: 90%; /* Adjust width as needed */
+  width: 90%;
+  /* Adjust width as needed */
   text-align: center;
   position: relative;
   padding-left: 15px;
 }
 
 .podium-item:nth-child(2) {
-  height: 20px; /* Adjust height for the 2nd place */
+  height: 20px;
+  /* Adjust height for the 2nd place */
   width: 80% !important;
-  background-color: #c0c0c0; /* Silver color */
+  background-color: #c0c0c0;
+  /* Silver color */
 }
 
 .podium-item:first-child {
-  height: 20px; /* Adjust height for the 1st place */
-  background-color: #FFD700; /* Gold color */
+  height: 20px;
+  /* Adjust height for the 1st place */
+  background-color: #FFD700;
+  /* Gold color */
   width: 90% !important;
 
 }
 
 .podium-item:last-child {
-  height: 20px; /* Adjust height for the 3rd place */
-  background-color: #cd7f32; /* Bronze color */
+  height: 20px;
+  /* Adjust height for the 3rd place */
+  background-color: #cd7f32;
+  /* Bronze color */
   width: 70% !important;
 
 }
