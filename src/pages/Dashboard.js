@@ -5,7 +5,6 @@ import { UploadOutlined } from "@ant-design/icons";
 import {
   FiSettings,
   FiType,
-  FiGrid,
   FiImage,
   FiDroplet,
 } from "react-icons/fi";

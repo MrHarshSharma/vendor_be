@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { db } from "../firebase/setup";
 import AppLayout from "./AppLayout";
 import useSound from "use-sound";
-import { message, Tooltip, Modal, Empty, Badge } from "antd";
+import { message, Tooltip, Modal, Empty } from "antd";
 import emailjs from "emailjs-com";
 
 import {

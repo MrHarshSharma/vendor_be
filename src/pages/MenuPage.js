@@ -332,7 +332,7 @@ const MenuPage = () => {
 
   const [loading, setLoading] = useState(false);
   let user = JSON.parse(localStorage.getItem("user"));
-  const [dbCat, setDbCat] = useState([]);
+  const [, setDbCat] = useState([]);
   const [categories_, setCategories_] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [newCategoryName, setNewCategoryName] = useState("");
