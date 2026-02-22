@@ -313,7 +313,7 @@ function Dashboard() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
                 <Form.Item
                   name="restaurantName"
-                  label={<span style={{ fontWeight: "500" }}>Restaurant Name</span>}
+                  label={<span style={{ fontWeight: "500" }}>Name</span>}
                   rules={[{ required: true, message: "Please enter restaurant name" }]}
                   style={{ marginBottom: 0 }}
                 >
@@ -326,15 +326,14 @@ function Dashboard() {
 
                 <Form.Item
                   name="restaurantType"
-                  label={<span style={{ fontWeight: "500" }}>Restaurant Type</span>}
+                  label={<span style={{ fontWeight: "500" }}>Type</span>}
                   rules={[{ required: true, message: "Please select type" }]}
                   style={{ marginBottom: 0 }}
                 >
                   <Select placeholder="Select type" size="large" style={{ borderRadius: "8px" }}>
                     <Option value="cafe">Cafe</Option>
                     <Option value="restaurant">Restaurant</Option>
-                    <Option value="dabha">Dabha</Option>
-                    <Option value="thela">Thela</Option>
+                    <Option value="hotel">Hotel</Option>
                   </Select>
                 </Form.Item>
               </div>
