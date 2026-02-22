@@ -44,7 +44,7 @@ const MenuPage = () => {
       price: "",
       description: "",
       fileList: [],
-      veg_nonveg:'',
+      veg_nonveg: '',
     };
     setCategories({
       ...categories,
@@ -71,8 +71,12 @@ const MenuPage = () => {
         console.log("this user data", docSnap.data());
         let data = docSnap.data();
 
-        setCategories_(Object.keys(data.menu ? data.menu : {}));
-        setSelectedCategories(Object.keys(data.menu ? data.menu : {}));
+        const defaultCategories = ["Starters", "Main Course", "Desserts", "Beverages"];
+        const menuKeys = Object.keys(data.menu ? data.menu : {});
+        const uniqueCategories = [...new Set([...menuKeys, ...defaultCategories])];
+
+        setCategories_(uniqueCategories);
+        // setSelectedCategories(Object.keys(data.menu ? data.menu : {}));
 
         setCategories(data.menu ? data.menu : {});
         setDbCat(data.menu ? data.menu : {});
@@ -83,7 +87,7 @@ const MenuPage = () => {
     } catch (error) {
       console.error("Error fetching document:", error);
     } finally {
-isPageLoading(false)
+      isPageLoading(false)
     }
   };
 
@@ -97,7 +101,7 @@ isPageLoading(false)
       label: "Veg",
     },
     {
-      value:'nonveg',
+      value: 'nonveg',
       label: "Non veg",
     }
   ]
@@ -176,23 +180,23 @@ isPageLoading(false)
             />
 
             <Input
-            placeholder="Ingridents"
-            value={item.ingridents}
-            onChange={(e) =>
-              handleInputChange(category, index, "ingridents", e.target.value)
-            }
-          />
-          <Select
-          size={'middle'}
-          defaultValue={`${item.veg_nonveg}`}
-          onChange={(value) =>
-            handleInputChange(category, index, "veg_nonveg", value)
-          }
-          style={{
-            width: 200,
-          }}
-          options={vegNonVegoptions}
-        />
+              placeholder="Ingridents"
+              value={item.ingridents}
+              onChange={(e) =>
+                handleInputChange(category, index, "ingridents", e.target.value)
+              }
+            />
+            <Select
+              size={'middle'}
+              defaultValue={`${item.veg_nonveg}`}
+              onChange={(value) =>
+                handleInputChange(category, index, "veg_nonveg", value)
+              }
+              style={{
+                width: 200,
+              }}
+              options={vegNonVegoptions}
+            />
           </div>
           <div>
             <Upload
@@ -256,27 +260,27 @@ isPageLoading(false)
 
   const handleSubmit = async () => {
     setLoading(true);
-isPageLoading(true)
+    isPageLoading(true)
     try {
       for (const category in categories) {
         for (const item of categories[category]) {
-          if(item.fileList.length > 0) {
-          if (item.fileList[0].status !== "done") {
-            const file = item.fileList[0].originFileObj;
-            const storageRef = ref(storage, `images/${user.uid}/${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-            item.imageUrl = downloadURL;
-            item.fileList = [
-              {
-                uid: item.fileList[0].name,
-                name: item.fileList[0].name,
-                status: "done",
-                url: downloadURL,
-              },
-            ];
+          if (item.fileList.length > 0) {
+            if (item.fileList[0].status !== "done") {
+              const file = item.fileList[0].originFileObj;
+              const storageRef = ref(storage, `images/${user.uid}/${file.name}`);
+              const snapshot = await uploadBytes(storageRef, file);
+              const downloadURL = await getDownloadURL(snapshot.ref);
+              item.imageUrl = downloadURL;
+              item.fileList = [
+                {
+                  uid: item.fileList[0].name,
+                  name: item.fileList[0].name,
+                  status: "done",
+                  url: downloadURL,
+                },
+              ];
+            }
           }
-        }
         }
       }
 
@@ -304,7 +308,7 @@ isPageLoading(true)
       message.error("Error updating Menu");
       setLoading(false);
     } finally {
-isPageLoading(false)
+      isPageLoading(false)
     }
   };
 
@@ -321,7 +325,7 @@ isPageLoading(false)
 
   const handleExcelUpload = (event) => {
     const file = event.target.files[0];
-    if(!file) return;
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = new Uint8Array(e.target.result);
@@ -329,13 +333,13 @@ isPageLoading(false)
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-  
+
       console.log(jsonData)
       // Parse the Excel data and update the state
       const newCategories = {};
       jsonData.forEach((row, index) => {
         if (index > 0) { // Assuming the first row is the header
-          const [category, name, description, price, available,prep_time,servings, ingridents, veg_nonveg] = row;
+          const [category, name, description, price, available, prep_time, servings, ingridents, veg_nonveg] = row;
           if (!newCategories[category]) {
             newCategories[category] = [];
           }
@@ -344,7 +348,7 @@ isPageLoading(false)
             description,
             price: price || '',
             available: available,
-            prep_time,servings, ingridents,
+            prep_time, servings, ingridents,
             fileList: [],
             veg_nonveg: veg_nonveg
           });
@@ -359,17 +363,17 @@ isPageLoading(false)
     };
     reader.readAsArrayBuffer(file);
   };
-  
+
 
   return (
     <AppLayout>
       <div style={{ padding: "24px" }}>
         <Form layout="vertical" style={{ width: "100%" }} onFinish={handleSubmit}>
           <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }} className="menuInputs">
-      
 
-          <input name='uploadExcel' type="file" accept=".xlsx, .xls" placeholder='uokiad' onChange={handleExcelUpload} />
-         
+
+            <input name='uploadExcel' type="file" accept=".xlsx, .xls" placeholder='uokiad' onChange={handleExcelUpload} />
+
             <Select
               mode="tags"
               style={{ width: "100%" }}
@@ -384,13 +388,13 @@ isPageLoading(false)
                 </Option>
               ))}
             </Select>
-  
+
             <Button type="primary" htmlType="submit" loading={loading}>
               Publish menu
             </Button>
           </div>
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-            
+
             {Object.keys(categories).map((category) => (
               <Card
                 title={category.charAt(0).toUpperCase() + category.slice(1)}
@@ -413,7 +417,7 @@ isPageLoading(false)
       </div>
     </AppLayout>
   );
-  
+
 
   // return (
   //   <AppLayout>
