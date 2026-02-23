@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 
 import { db } from "../firebase/setup";
 import AppLayout from "./AppLayout";
@@ -61,6 +61,8 @@ const Orders = () => {
   const [playNewOrderSound] = useSound(newOrderSound);
   const [grandTotal, setGrandTotal] = useState(0);
   const [toPrintOrder, setToPrintOrder] = useState(null);
+  const [recentlyUpdatedOrders, setRecentlyUpdatedOrders] = useState(new Set());
+  const lastUpdatedTimestamps = useRef({});
 
   useEffect(() => {
     try {
@@ -73,23 +75,54 @@ const Orders = () => {
 
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const ordersList = [];
-        let isNewDataAdded = false;
+        let shouldPlaySound = false;
+        const newlyUpdatedOrderIds = new Set();
 
         querySnapshot.docChanges().forEach((change) => {
           if (change.type === "added") {
-            isNewDataAdded = true;
+            // New order added
+            shouldPlaySound = true;
+          } else if (change.type === "modified") {
+            // Order was modified - check if items were added
+            const orderData = change.doc.data();
+            const orderId = change.doc.id;
+            const previousLastUpdated = lastUpdatedTimestamps.current[orderId];
+
+            // If lastUpdated changed, items were added
+            if (orderData.lastUpdated && orderData.lastUpdated !== previousLastUpdated) {
+              shouldPlaySound = true;
+              newlyUpdatedOrderIds.add(orderId);
+              message.info({
+                content: `New items added to order #${orderId.slice(-6).toUpperCase()}!`,
+                duration: 5,
+              });
+            }
+
+            // Update our tracking
+            lastUpdatedTimestamps.current[orderId] = orderData.lastUpdated;
           }
         });
 
         querySnapshot.forEach((doc) => {
+          const data = doc.data();
           ordersList.push({
             id: doc.id,
-            ...doc.data(),
+            ...data,
           });
+          // Track lastUpdated timestamps
+          if (data.lastUpdated) {
+            lastUpdatedTimestamps.current[doc.id] = data.lastUpdated;
+          }
         });
 
         setOrders(ordersList);
         isPageLoading(false);
+
+        // Mark orders as recently updated (for visual highlight)
+        // Owner must manually acknowledge by clicking "Accept New Items"
+        if (newlyUpdatedOrderIds.size > 0) {
+          setRecentlyUpdatedOrders(prev => new Set([...prev, ...newlyUpdatedOrderIds]));
+        }
 
         const grandTotal_order = ordersList.reduce((total, order) => {
           const orderTotal = order.order.reduce((orderSum, item) => {
@@ -99,7 +132,7 @@ const Orders = () => {
         }, 0);
         setGrandTotal(grandTotal_order);
 
-        if (isNewDataAdded) {
+        if (shouldPlaySound) {
           playNewOrderSound();
         }
       });
@@ -224,6 +257,34 @@ const Orders = () => {
     }
   };
 
+  const acknowledgeNewItems = async (order) => {
+    try {
+      // Remove from recently updated set
+      setRecentlyUpdatedOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(order.id);
+        return newSet;
+      });
+
+      // Clear the addedAt field from all items and clear lastUpdated
+      const updatedItems = order.order.map(item => {
+        const { addedAt, ...itemWithoutAddedAt } = item;
+        return itemWithoutAddedAt;
+      });
+
+      const orderRef = doc(db, "orders", order.id);
+      await updateDoc(orderRef, {
+        lastUpdated: null,
+        order: updatedItems,
+      });
+
+      message.success("New items acknowledged");
+    } catch (error) {
+      console.error("Error acknowledging new items: ", error);
+      message.error("Failed to acknowledge new items");
+    }
+  };
+
   // Stats calculations
   const newOrders = orders.filter((o) => o.orderStatus === "new").length;
   const inProgressOrders = orders.filter((o) => o.orderStatus === "accept").length;
@@ -322,13 +383,14 @@ const Orders = () => {
     </div>
   );
 
-  const OrderCard = ({ order }) => {
+  const OrderCard = ({ order, isRecentlyUpdated, onAcknowledgeNewItems }) => {
     const statusConfig = getStatusConfig(order.orderStatus);
     const orderTotal = order.order.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
     const orderDate = new Date(order.timeStamp);
+    const lastUpdatedDate = order.lastUpdated ? new Date(order.lastUpdated) : null;
 
     return (
       <div
@@ -336,10 +398,66 @@ const Orders = () => {
           background: "white",
           borderRadius: "16px",
           overflow: "hidden",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-          border: `1px solid ${statusConfig.color}30`,
+          boxShadow: isRecentlyUpdated
+            ? "0 0 25px rgba(33, 150, 243, 0.5), 0 0 50px rgba(33, 150, 243, 0.2)"
+            : "0 2px 8px rgba(0,0,0,0.06)",
+          border: isRecentlyUpdated
+            ? "3px solid #2196F3"
+            : `1px solid ${statusConfig.color}30`,
+          position: "relative",
+          transition: "box-shadow 0.3s ease, border 0.3s ease",
         }}
       >
+        {/* NEW ITEMS ADDED Banner */}
+        {isRecentlyUpdated && (
+          <div
+            style={{
+              background: "linear-gradient(90deg, #2196F3, #1976D2)",
+              color: "white",
+              padding: "12px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                fontWeight: "700",
+                fontSize: "14px",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+              }}
+            >
+              <span style={{ fontSize: "18px" }}>🔔</span>
+              NEW ITEMS ADDED TO THIS ORDER!
+            </div>
+            <button
+              onClick={() => onAcknowledgeNewItems(order)}
+              style={{
+                background: "white",
+                color: "#1976D2",
+                border: "none",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontWeight: "700",
+                fontSize: "13px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <FiCheckCircle size={16} />
+              Accept New Items
+            </button>
+          </div>
+        )}
+
         {/* Card Header */}
         <div
           style={{
@@ -383,6 +501,20 @@ const Orders = () => {
             <span style={{ fontSize: "13px", color: "#999" }}>
               {orderDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
+            {lastUpdatedDate && (
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "#2196F3",
+                  background: "#2196F315",
+                  padding: "3px 8px",
+                  borderRadius: "12px",
+                  fontWeight: "500",
+                }}
+              >
+                + Items added {lastUpdatedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
           </div>
         </div>
 
@@ -438,34 +570,57 @@ const Orders = () => {
                   padding: "12px 16px",
                 }}
               >
-                {order.order.map((item, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: "6px 0",
-                      borderBottom:
-                        idx < order.order.length - 1 ? "1px dashed #e0e0e0" : "none",
-                    }}
-                  >
-                    <span style={{ color: "#333" }}>
-                      <span
-                        style={{
-                          fontWeight: "600",
-                          color: colors.success,
-                          marginRight: "8px",
-                        }}
-                      >
-                        {item.quantity}×
+                {order.order.map((item, idx) => {
+                  const isNewItem = item.addedAt && item.addedAt === order.lastUpdated;
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "8px 10px",
+                        marginBottom: idx < order.order.length - 1 ? "6px" : "0",
+                        borderRadius: "8px",
+                        background: isNewItem ? "#E3F2FD" : "transparent",
+                        border: isNewItem ? "1px solid #2196F3" : "1px solid transparent",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {isNewItem && (
+                          <span
+                            style={{
+                              background: "#2196F3",
+                              color: "white",
+                              fontSize: "10px",
+                              fontWeight: "700",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            NEW
+                          </span>
+                        )}
+                        <span style={{ color: "#333" }}>
+                          <span
+                            style={{
+                              fontWeight: "600",
+                              color: isNewItem ? "#2196F3" : colors.success,
+                              marginRight: "8px",
+                            }}
+                          >
+                            {item.quantity}×
+                          </span>
+                          {item.name}
+                        </span>
+                      </div>
+                      <span style={{ fontWeight: "500", color: isNewItem ? "#2196F3" : "#555" }}>
+                        ₹{item.quantity * item.price}
                       </span>
-                      {item.name}
-                    </span>
-                    <span style={{ fontWeight: "500", color: "#555" }}>
-                      ₹{item.quantity * item.price}
-                    </span>
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -681,7 +836,12 @@ const Orders = () => {
           {filteredOrders.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {filteredOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  isRecentlyUpdated={recentlyUpdatedOrders.has(order.id)}
+                  onAcknowledgeNewItems={acknowledgeNewItems}
+                />
               ))}
             </div>
           ) : (
