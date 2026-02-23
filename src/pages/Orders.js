@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 import { db } from "../firebase/setup";
 import AppLayout from "./AppLayout";
