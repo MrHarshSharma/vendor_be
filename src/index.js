@@ -20,6 +20,7 @@ import Orders from "./pages/Orders";
 
 import CustomerRelation from "./pages/CustomerRelation";
 import { Provider, createStore } from "jotai";
+import { AuthProvider } from "./context/AuthContext";
 
 const myStore = createStore();
 const router = createBrowserRouter(
@@ -39,12 +40,13 @@ const router = createBrowserRouter(
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-  
-    <Provider store={myStore}>
-      <ConfigProvider theme={{ token: { colorPrimary: "#00b96b" } }}>
-        <RouterProvider router={router} />
-      </ConfigProvider>
-    </Provider>
+    <AuthProvider>
+      <Provider store={myStore}>
+        <ConfigProvider theme={{ token: { colorPrimary: "#00b96b" } }}>
+          <RouterProvider router={router} />
+        </ConfigProvider>
+      </Provider>
+    </AuthProvider>
   </React.StrictMode>
 );
 

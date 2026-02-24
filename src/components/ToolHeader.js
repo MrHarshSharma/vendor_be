@@ -16,45 +16,57 @@ import { checkIsUserPlanExpired } from "../constants/commonFunctions";
 
 import { useSetAtom } from "jotai";
 import { pageLoading } from "../constants/stateVariables";
+import { useAuth } from "../context/AuthContext";
 
 
 const { Header } = Layout;
 
 const MainMenu = () => {
-  const isPageLoading = useSetAtom(pageLoading)
-  let user = JSON.parse(localStorage.getItem("user"));
+  const isPageLoading = useSetAtom(pageLoading);
+  const { userData: user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const [hideMenu, setHideMenu] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(window.pageYOffset);
 
   useEffect(() => {
-    fetchUserDocument();
-    isPageLoading(true)
+    if (user?.email) {
+      fetchUserDocument();
+    }
+    isPageLoading(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user?.email]);
 
   const fetchUserDocument = async () => {
     try {
+      if (!user?.email) return;
+
       const q = query(
         collection(db, 'authUser'),
         where('email', '==', user.email)
       );
       const querySnapshot = await getDocs(q);
-  
+
       if (!querySnapshot.empty) {
-        const docData = querySnapshot.docs[0].data(); // Assuming only one document matches
+        const docData = querySnapshot.docs[0].data();
         let isExpired = checkIsUserPlanExpired(docData.expiryDate);
-        if(isExpired) {
-          message.error('Your plan has expired')
-          localStorage.clear();
-          navigate("/login");
+        if (isExpired) {
+          message.error('Your plan has expired');
+          await handleLogout();
         }
-      } else {
-        console.log('No matching documents.');
       }
     } catch (error) {
       console.error('Error fetching document: ', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/login");
+    } catch (error) {
+      console.error('Logout error:', error);
+      message.error('Failed to logout. Please try again.');
     }
   };
 
@@ -74,13 +86,12 @@ const MainMenu = () => {
 
   useEffect(() => {
     setHideMenu(true);
-    console.log();
   }, []);
 
   const navigateTo = (route) => {
-    isPageLoading(true)
+    isPageLoading(true);
     navigate(route);
-  }
+  };
 
   return (
     <Header
@@ -119,7 +130,7 @@ const MainMenu = () => {
         >
           Profile
         </Menu.Item>
-  
+
         <Menu.Item key="/customers" icon={<HiUserGroup />} onClick={() => {
           navigateTo("/customers");
         }} className="app-light">
@@ -138,10 +149,7 @@ const MainMenu = () => {
         <Menu.Item
           key="7"
           icon={<LogoutOutlined />}
-          onClick={() => {
-            localStorage.clear();
-            navigate("/login");
-          }}
+          onClick={handleLogout}
           className="app-light"
         >
           Logout

@@ -20,6 +20,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { pageLoading, store } from "../constants/stateVariables";
 import { useReactToPrint } from "react-to-print";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 function Profile() {
   const isPageLoading = useSetAtom(pageLoading);
@@ -27,13 +28,12 @@ function Profile() {
   const setStoreDetails = useSetAtom(store);
   const [isDownloadModalOpen, setisDownloadModalOpen] = useState(false);
   const componentRef = useRef();
-
-  const user = JSON.parse(localStorage.getItem("user"));
+  const { userData: user } = useAuth();
 
   const fetchConfigstore = async () => {
     try {
       if (!user) {
-        throw new Error("No user UID found in localStorage");
+        throw new Error("No authenticated user found");
       }
 
       const configRef = doc(db, "configstore", user.uid);

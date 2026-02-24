@@ -31,6 +31,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useSetAtom } from "jotai";
 import { pageLoading } from "../constants/stateVariables";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -329,9 +330,9 @@ const MenuPage = () => {
   const isPageLoading = useSetAtom(pageLoading);
   const storage = getStorage();
   const excelInputRef = useRef(null);
+  const { userData: user } = useAuth();
 
   const [loading, setLoading] = useState(false);
-  let user = JSON.parse(localStorage.getItem("user"));
   const [, setDbCat] = useState([]);
   const [categories_, setCategories_] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);

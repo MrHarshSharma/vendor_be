@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Input, Button, Row, Col, Typography, message } from "antd";
 import {
   RecaptchaVerifier,
@@ -6,20 +6,31 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import GoogleButton from "react-google-button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { provider, db, auth } from "../firebase/setup";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 
 import { checkIsUserPlanExpired } from "../constants/commonFunctions";
+import { useAuth } from "../context/AuthContext";
 
 const { Title } = Typography;
 
 const MobileNumberLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [OTPloading, setOTPLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const [confirmationResult, setConfirmationResult] = useState(null);
   const [isOtpSent, setOtpSent] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
 
   const sendOtp = async (values) => {
     try {
@@ -30,30 +41,30 @@ const MobileNumberLogin = () => {
         `+91${values.mobileNumber}`,
         recaptcha
       );
-      setUser(confirmation);
+      setConfirmationResult(confirmation);
       if (confirmation.verificationId) {
         setOtpSent(true);
       }
-      setTimeout(() => {
-        console.log("Received values:", values);
-        setLoading(false);
-      }, 2000);
+      setLoading(false);
     } catch (error) {
-      console.error(error);
+      console.error("OTP send error:", error);
+      message.error("Failed to send OTP. Please try again.");
+      setLoading(false);
     }
   };
 
   const otpValidation = async (values) => {
     try {
       setOTPLoading(true);
-      const data = await user.confirm(values.otp);
-      console.log(data);
-      setTimeout(() => {
-        console.log("Received values:", values);
-        setOTPLoading(false);
-      }, 2000);
+      await confirmationResult.confirm(values.otp);
+      // Firebase Auth state will automatically update via AuthContext
+      // Navigation will happen via the useEffect above
+      message.success("OTP verified successfully!");
+      setOTPLoading(false);
     } catch (error) {
-      console.error(error);
+      console.error("OTP validation error:", error);
+      message.error("Invalid OTP. Please try again.");
+      setOTPLoading(false);
     }
   };
 
@@ -61,7 +72,7 @@ const MobileNumberLogin = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-   
+
       const userRef = doc(db, "users", user.uid);
       const querySnapshot = await getDocs(collection(db, "authUser"));
       const typesData = querySnapshot.docs.map((doc) => ({
@@ -76,17 +87,13 @@ const MobileNumberLogin = () => {
         const isExpired = checkIsUserPlanExpired(
           isUserAuthorised[0].expiryDate
         );
-        console.log(isExpired);
         if (isExpired) {
           message.error(`Plan expired for ${user.email}`);
+          // Sign out the user if plan is expired
+          await auth.signOut();
           return;
         }
-        message.success(`Login successful`);
-      } 
-      // else {
-      //   message.error(`${user.email} is not authorized to login`);
-      //   return;
-      // }
+      }
 
       const userData = {
         uid: user.uid,
@@ -100,22 +107,19 @@ const MobileNumberLogin = () => {
       if (!docSnap.exists()) {
         await setDoc(userRef, userData);
       }
-      localStorage.setItem("token", result.user.accessToken);
-      localStorage.setItem("user", JSON.stringify(userData));
-      navigate("/");
-      console.log("User signed in:", user);
+
+      // No need to store in localStorage - AuthContext handles auth state
+      // Navigation will happen automatically via useEffect when isAuthenticated changes
       message.success(`Login successful for ${user.email}`);
       return user;
     } catch (error) {
       console.error("Error signing in with Google:", error);
+      message.error("Failed to sign in. Please try again.");
     }
   };
 
   const handleSignIn = async () => {
-    const user = await signInWithGoogle();
-    if (user) {
-      console.log("User signed in:", user);
-    }
+    await signInWithGoogle();
   };
 
   return (

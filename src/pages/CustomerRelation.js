@@ -14,9 +14,11 @@ import { FiUsers, FiShoppingBag, FiDollarSign, FiStar, FiTrendingUp } from "reac
 import { useSetAtom } from "jotai";
 import { pageLoading } from "../constants/stateVariables";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 const CustomerRelation = () => {
   const isPageLoading = useSetAtom(pageLoading);
+  const { userData: user } = useAuth();
 
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(undefined);
@@ -25,7 +27,6 @@ const CustomerRelation = () => {
   const [allFoodItemHePurchased, setAllFoodItemHePurchased] = useState({});
   const [tableHeights, setTableHeights] = useState(0);
   const [customerFavItems, setCustomerFavItems] = useState([]);
-  let user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const fetchCustomers = async () => {

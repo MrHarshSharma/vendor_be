@@ -23,13 +23,14 @@ import { SketchPicker } from "react-color";
 import { useSetAtom } from "jotai";
 import { pageLoading, store } from "../constants/stateVariables";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
   const updateTheStore = useSetAtom(store);
   const updateTheLoading = useSetAtom(pageLoading);
+  const { userData: user } = useAuth();
 
   const { Option } = Select;
-  let user = JSON.parse(localStorage.getItem("user"));
 
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState(null);

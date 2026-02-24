@@ -40,6 +40,7 @@ import {
 import { colors } from "../constants/colors";
 import { useAtom, useSetAtom } from "jotai";
 import { pageLoading, store } from "../constants/stateVariables";
+import { useAuth } from "../context/AuthContext";
 
 const Orders = () => {
   const isPageLoading = useSetAtom(pageLoading);
@@ -47,6 +48,7 @@ const Orders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [storeDetails] = useAtom(store);
   const [activeFilter, setActiveFilter] = useState("all");
+  const { userData: user } = useAuth();
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -57,7 +59,6 @@ const Orders = () => {
   };
 
   const [orders, setOrders] = useState([]);
-  const user = JSON.parse(localStorage.getItem("user"));
   const [playNewOrderSound] = useSound(newOrderSound);
   const [grandTotal, setGrandTotal] = useState(0);
   const [toPrintOrder, setToPrintOrder] = useState(null);
