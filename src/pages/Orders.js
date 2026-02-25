@@ -552,6 +552,7 @@ const Orders = () => {
       fetchStatsCounts();
       checkInProgressWithNewItems();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
   useEffect(() => {
@@ -563,6 +564,7 @@ const Orders = () => {
     }, 30000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
   // Hide page loader only when both orders and stats are loaded
