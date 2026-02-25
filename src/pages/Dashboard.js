@@ -66,6 +66,7 @@ function Dashboard() {
           tagline: wholeData.tagline,
           subtagline: wholeData.subtagline,
           tables: wholeData.tables,
+          currencySymbol: wholeData.currencySymbol || "₹",
         });
       }
     } catch (error) {
@@ -117,7 +118,7 @@ function Dashboard() {
 
   const handleSubmit = async (values) => {
     setLoading(true);
-    let { restaurantType, restaurantName, tagline, subtagline, tables } = values;
+    let { restaurantType, restaurantName, tagline, subtagline, tables, currencySymbol } = values;
     tables = tables === "" ? 0 : parseInt(tables);
 
     let configStoreData = {
@@ -128,6 +129,7 @@ function Dashboard() {
       tagline,
       subtagline,
       tables,
+      currencySymbol: currencySymbol || "₹",
     };
 
     if (imageUrl !== null) {
@@ -339,7 +341,7 @@ function Dashboard() {
                 </Form.Item>
               </div>
 
-              <div style={{ marginTop: "20px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "20px" }}>
                 <Form.Item
                   name="tables"
                   label={<span style={{ fontWeight: "500" }}>Number of Tables</span>}
@@ -349,7 +351,21 @@ function Dashboard() {
                     placeholder="Enter number of tables"
                     size="large"
                     type="number"
-                    style={{ borderRadius: "8px", maxWidth: "200px" }}
+                    style={{ borderRadius: "8px" }}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="currencySymbol"
+                  label={<span style={{ fontWeight: "500" }}>Currency Symbol</span>}
+                  style={{ marginBottom: 0 }}
+                  initialValue="₹"
+                >
+                  <Input
+                    placeholder="e.g., ₹, $, €, £"
+                    size="large"
+                    style={{ borderRadius: "8px" }}
+                    maxLength={3}
                   />
                 </Form.Item>
               </div>

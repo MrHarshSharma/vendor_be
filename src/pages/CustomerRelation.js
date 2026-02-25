@@ -11,13 +11,14 @@ import { Table, Empty } from "antd";
 import { RiMedalFill } from "react-icons/ri";
 import { FiUsers, FiShoppingBag, FiDollarSign, FiStar, FiTrendingUp } from "react-icons/fi";
 
-import { useSetAtom } from "jotai";
-import { pageLoading } from "../constants/stateVariables";
+import { useSetAtom, useAtom } from "jotai";
+import { pageLoading, store } from "../constants/stateVariables";
 import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
 
 const CustomerRelation = () => {
   const isPageLoading = useSetAtom(pageLoading);
+  const [storeDetails] = useAtom(store);
   const { userData: user } = useAuth();
 
   const [customers, setCustomers] = useState([]);
@@ -216,7 +217,7 @@ const CustomerRelation = () => {
               {orderItem.quantity} × {orderItem.name}
             </span>
             <span style={{ color: colors.success, fontWeight: "500" }}>
-              ₹{orderItem.quantity * orderItem.price}
+              {storeDetails?.currencySymbol || "₹"}{orderItem.quantity * orderItem.price}
             </span>
           </div>
         ));
@@ -240,7 +241,7 @@ const CustomerRelation = () => {
               fontSize: "16px",
             }}
           >
-            ₹{total}
+            {storeDetails?.currencySymbol || "₹"}{total}
           </span>
         );
       },
@@ -580,7 +581,7 @@ const CustomerRelation = () => {
                 <StatCard
                   icon={<FiDollarSign size={24} color={colors.orange} />}
                   label="Total Spent"
-                  value={`₹${calculateGrandTotal(customerOrders)}`}
+                  value={`${storeDetails?.currencySymbol || "₹"}${calculateGrandTotal(customerOrders)}`}
                   color={colors.orange}
                 />
               </div>

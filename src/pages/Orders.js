@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { db } from "../firebase/setup";
 import AppLayout from "./AppLayout";
 import useSound from "use-sound";
-import { message, Tooltip, Modal, Empty } from "antd";
+import { message, Tooltip, Modal, Empty, Spin } from "antd";
 import emailjs from "emailjs-com";
 
 import {
@@ -15,6 +15,10 @@ import {
   query,
   updateDoc,
   where,
+  limit,
+  startAfter,
+  getDocs,
+  getCountFromServer,
 } from "firebase/firestore";
 import { useReactToPrint } from "react-to-print";
 
@@ -27,6 +31,8 @@ import {
   FiDollarSign,
   FiUser,
   FiMapPin,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import { MdRestaurantMenu } from "react-icons/md";
 
@@ -41,6 +47,8 @@ import { colors } from "../constants/colors";
 import { useAtom, useSetAtom } from "jotai";
 import { pageLoading, store } from "../constants/stateVariables";
 import { useAuth } from "../context/AuthContext";
+
+const ORDERS_PER_PAGE = 10;
 
 const Orders = () => {
   const isPageLoading = useSetAtom(pageLoading);
@@ -65,85 +73,269 @@ const Orders = () => {
   const [recentlyUpdatedOrders, setRecentlyUpdatedOrders] = useState(new Set());
   const lastUpdatedTimestamps = useRef({});
 
-  useEffect(() => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [cursors, setCursors] = useState({});
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const unsubscribeRef = useRef(null);
+  const isInitialLoad = useRef(true);
+
+  // Fetch total orders count based on active filter
+  const fetchTotalCount = async (filter) => {
     try {
       const ordersRef = collection(db, "orders");
-      const q = query(
-        ordersRef,
-        where("storeId", "==", user.uid),
-        orderBy("timeStamp", "desc")
+      let countQuery;
+
+      if (filter === "all") {
+        countQuery = query(
+          ordersRef,
+          where("storeId", "==", user.uid)
+        );
+      } else {
+        countQuery = query(
+          ordersRef,
+          where("storeId", "==", user.uid),
+          where("orderStatus", "==", filter)
+        );
+      }
+
+      const snapshot = await getCountFromServer(countQuery);
+      setTotalOrders(snapshot.data().count);
+    } catch (error) {
+      console.error("Error fetching total count:", error);
+    }
+  };
+
+  // Fetch orders for a specific page with filter
+  const fetchOrdersForPage = async (page, filter) => {
+    if (!user?.uid) return;
+
+    setIsLoadingPage(true);
+
+    // Unsubscribe from previous listener
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+    }
+
+    try {
+      const ordersRef = collection(db, "orders");
+      let q;
+
+      // Build base query constraints
+      const baseConstraints = filter === "all"
+        ? [where("storeId", "==", user.uid)]
+        : [where("storeId", "==", user.uid), where("orderStatus", "==", filter)];
+
+      if (page === 1) {
+        // First page - no cursor needed
+        q = query(
+          ordersRef,
+          ...baseConstraints,
+          orderBy("timeStamp", "desc"),
+          limit(ORDERS_PER_PAGE)
+        );
+      } else {
+        // Check if we have a cursor for this page
+        const cursor = cursors[page];
+        if (cursor) {
+          q = query(
+            ordersRef,
+            ...baseConstraints,
+            orderBy("timeStamp", "desc"),
+            startAfter(cursor),
+            limit(ORDERS_PER_PAGE)
+          );
+        } else {
+          // Need to fetch cursor for previous page first
+          const prevPageCursor = cursors[page - 1];
+          if (prevPageCursor) {
+            q = query(
+              ordersRef,
+              ...baseConstraints,
+              orderBy("timeStamp", "desc"),
+              startAfter(prevPageCursor),
+              limit(ORDERS_PER_PAGE)
+            );
+          } else {
+            // Fallback: fetch from beginning and skip to the right page
+            const skipQuery = query(
+              ordersRef,
+              ...baseConstraints,
+              orderBy("timeStamp", "desc"),
+              limit((page - 1) * ORDERS_PER_PAGE)
+            );
+            const skipSnapshot = await getDocs(skipQuery);
+            const lastDoc = skipSnapshot.docs[skipSnapshot.docs.length - 1];
+
+            if (lastDoc) {
+              q = query(
+                ordersRef,
+                ...baseConstraints,
+                orderBy("timeStamp", "desc"),
+                startAfter(lastDoc),
+                limit(ORDERS_PER_PAGE)
+              );
+              // Store the cursor
+              setCursors(prev => ({ ...prev, [page]: lastDoc }));
+            } else {
+              setIsLoadingPage(false);
+              return;
+            }
+          }
+        }
+      }
+
+      // Set up real-time listener for current page
+      const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+          const ordersList = [];
+          let shouldPlaySound = false;
+          const newlyUpdatedOrderIds = new Set();
+
+          let hasNewOrders = false;
+          querySnapshot.docChanges().forEach((change) => {
+            if (change.type === "added" && !isInitialLoad.current) {
+              // New order added (only play sound if not initial/page load)
+              shouldPlaySound = true;
+              hasNewOrders = true;
+            } else if (change.type === "modified") {
+              const orderData = change.doc.data();
+              const orderId = change.doc.id;
+              const previousLastUpdated = lastUpdatedTimestamps.current[orderId];
+
+              if (orderData.lastUpdated && orderData.lastUpdated !== previousLastUpdated) {
+                shouldPlaySound = true;
+                newlyUpdatedOrderIds.add(orderId);
+                message.info({
+                  content: `New items added to order #${orderId.slice(-6).toUpperCase()}!`,
+                  duration: 5,
+                });
+              }
+              lastUpdatedTimestamps.current[orderId] = orderData.lastUpdated;
+            }
+          });
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            ordersList.push({
+              id: doc.id,
+              ...data,
+            });
+            if (data.lastUpdated) {
+              lastUpdatedTimestamps.current[doc.id] = data.lastUpdated;
+            }
+          });
+
+          // Store cursor for next page (last document of current page)
+          if (querySnapshot.docs.length > 0) {
+            const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+            setCursors(prev => ({ ...prev, [page + 1]: lastDoc }));
+          }
+
+          setOrders(ordersList);
+          setIsLoadingPage(false);
+          setOrdersLoaded(true);
+          isInitialLoad.current = false;
+
+          if (newlyUpdatedOrderIds.size > 0) {
+            setRecentlyUpdatedOrders(prev => new Set([...prev, ...newlyUpdatedOrderIds]));
+            checkInProgressWithNewItems(); // Check for blinking indicator
+          }
+
+          const grandTotal_order = ordersList.reduce((total, order) => {
+            const orderTotal = order.order.reduce((orderSum, item) => {
+              return orderSum + parseFloat(item.price) * item.quantity;
+            }, 0);
+            return total + orderTotal;
+          }, 0);
+          setGrandTotal(grandTotal_order);
+
+          if (shouldPlaySound) {
+            playNewOrderSound();
+          }
+
+          // Refresh stats if new orders were added
+          if (hasNewOrders) {
+            fetchStatsCounts();
+          }
+        },
+        (error) => {
+          console.error("Error in orders listener:", error);
+          setIsLoadingPage(false);
+          setOrdersLoaded(true);
+          // Check if it's an index error
+          if (error.message?.includes("index")) {
+            message.error("Database index required. Check console for the index creation link.");
+          } else {
+            message.error("Failed to load orders");
+          }
+        }
       );
 
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const ordersList = [];
-        let shouldPlaySound = false;
-        const newlyUpdatedOrderIds = new Set();
-
-        querySnapshot.docChanges().forEach((change) => {
-          if (change.type === "added") {
-            // New order added
-            shouldPlaySound = true;
-          } else if (change.type === "modified") {
-            // Order was modified - check if items were added
-            const orderData = change.doc.data();
-            const orderId = change.doc.id;
-            const previousLastUpdated = lastUpdatedTimestamps.current[orderId];
-
-            // If lastUpdated changed, items were added
-            if (orderData.lastUpdated && orderData.lastUpdated !== previousLastUpdated) {
-              shouldPlaySound = true;
-              newlyUpdatedOrderIds.add(orderId);
-              message.info({
-                content: `New items added to order #${orderId.slice(-6).toUpperCase()}!`,
-                duration: 5,
-              });
-            }
-
-            // Update our tracking
-            lastUpdatedTimestamps.current[orderId] = orderData.lastUpdated;
-          }
-        });
-
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          ordersList.push({
-            id: doc.id,
-            ...data,
-          });
-          // Track lastUpdated timestamps
-          if (data.lastUpdated) {
-            lastUpdatedTimestamps.current[doc.id] = data.lastUpdated;
-          }
-        });
-
-        setOrders(ordersList);
-        isPageLoading(false);
-
-        // Mark orders as recently updated (for visual highlight)
-        // Owner must manually acknowledge by clicking "Accept New Items"
-        if (newlyUpdatedOrderIds.size > 0) {
-          setRecentlyUpdatedOrders(prev => new Set([...prev, ...newlyUpdatedOrderIds]));
-        }
-
-        const grandTotal_order = ordersList.reduce((total, order) => {
-          const orderTotal = order.order.reduce((orderSum, item) => {
-            return orderSum + parseFloat(item.price) * item.quantity;
-          }, 0);
-          return total + orderTotal;
-        }, 0);
-        setGrandTotal(grandTotal_order);
-
-        if (shouldPlaySound) {
-          playNewOrderSound();
-        }
-      });
-
-      return () => unsubscribe();
+      unsubscribeRef.current = unsubscribe;
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching orders:", error);
+      setIsLoadingPage(false);
     }
+  };
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+    setCursors({});
+    isInitialLoad.current = true; // Reset so filter switch doesn't trigger sound
+  }, [activeFilter]);
+
+  // Initial load and page/filter changes
+  useEffect(() => {
+    if (user?.uid) {
+      fetchTotalCount(activeFilter);
+      fetchOrdersForPage(currentPage, activeFilter);
+    }
+
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playNewOrderSound]);
+  }, [user?.uid, currentPage, activeFilter]);
+
+  // Refresh total count periodically (for new orders)
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const interval = setInterval(() => {
+      fetchTotalCount(activeFilter);
+    }, 30000); // Refresh count every 30 seconds
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, activeFilter]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalOrders / ORDERS_PER_PAGE);
+
+  // Pagination handlers
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
+  };
+
+  const handlePageClick = (page) => {
+    if (page !== currentPage && page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
@@ -212,6 +404,7 @@ const Orders = () => {
       if (orderSnapshot.exists()) {
         await updateDoc(orderRef, { orderStatus: "accept" });
         message.success("Order accepted");
+        fetchStatsCounts(); // Refresh stats
       }
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -227,6 +420,7 @@ const Orders = () => {
       if (orderSnapshot.exists()) {
         await updateDoc(orderRef, { orderStatus: "cancle" });
         message.info("Order cancelled");
+        fetchStatsCounts(); // Refresh stats
       }
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -251,6 +445,7 @@ const Orders = () => {
       if (orderSnapshot.exists()) {
         await updateDoc(orderRef, { orderStatus: "complete" });
         message.success("Order completed");
+        fetchStatsCounts(); // Refresh stats
       }
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -280,27 +475,105 @@ const Orders = () => {
       });
 
       message.success("New items acknowledged");
+      checkInProgressWithNewItems(); // Refresh notification state
     } catch (error) {
       console.error("Error acknowledging new items: ", error);
       message.error("Failed to acknowledge new items");
     }
   };
 
-  // Stats calculations
-  const newOrders = orders.filter((o) => o.orderStatus === "new").length;
-  const inProgressOrders = orders.filter((o) => o.orderStatus === "accept").length;
-  const completedOrders = orders.filter((o) => o.orderStatus === "complete").length;
-  const cancelledOrders = orders.filter((o) => o.orderStatus === "cancle").length;
-
-  // Filter orders based on active filter
-  const filteredOrders = orders.filter((order) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "new") return order.orderStatus === "new";
-    if (activeFilter === "accept") return order.orderStatus === "accept";
-    if (activeFilter === "complete") return order.orderStatus === "complete";
-    if (activeFilter === "cancle") return order.orderStatus === "cancle";
-    return true;
+  // Stats counts (fetched from server)
+  const [statsCounts, setStatsCounts] = useState({
+    all: 0,
+    new: 0,
+    accept: 0,
+    complete: 0,
+    cancle: 0,
   });
+  const [statsLoaded, setStatsLoaded] = useState(false);
+  const [ordersLoaded, setOrdersLoaded] = useState(false);
+  const [hasInProgressWithNewItems, setHasInProgressWithNewItems] = useState(false);
+
+  // Check if there are any in-progress orders with new items
+  const checkInProgressWithNewItems = async () => {
+    if (!user?.uid) return;
+
+    try {
+      const ordersRef = collection(db, "orders");
+      const q = query(
+        ordersRef,
+        where("storeId", "==", user.uid),
+        where("orderStatus", "==", "accept"),
+        where("lastUpdated", "!=", null),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+      setHasInProgressWithNewItems(!snapshot.empty);
+    } catch (error) {
+      console.error("Error checking in-progress orders:", error);
+    }
+  };
+
+  // Fetch all stats counts
+  const fetchStatsCounts = async () => {
+    if (!user?.uid) return;
+
+    try {
+      const ordersRef = collection(db, "orders");
+      const statuses = ["new", "accept", "complete", "cancle"];
+
+      // Fetch all counts in parallel
+      const [allCount, ...statusCounts] = await Promise.all([
+        getCountFromServer(query(ordersRef, where("storeId", "==", user.uid))),
+        ...statuses.map((status) =>
+          getCountFromServer(
+            query(ordersRef, where("storeId", "==", user.uid), where("orderStatus", "==", status))
+          )
+        ),
+      ]);
+
+      setStatsCounts({
+        all: allCount.data().count,
+        new: statusCounts[0].data().count,
+        accept: statusCounts[1].data().count,
+        complete: statusCounts[2].data().count,
+        cancle: statusCounts[3].data().count,
+      });
+      setStatsLoaded(true);
+    } catch (error) {
+      console.error("Error fetching stats counts:", error);
+      setStatsLoaded(true); // Still mark as loaded to not block UI
+    }
+  };
+
+  // Fetch stats counts on mount and periodically
+  useEffect(() => {
+    if (user?.uid) {
+      fetchStatsCounts();
+      checkInProgressWithNewItems();
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const interval = setInterval(() => {
+      fetchStatsCounts();
+      checkInProgressWithNewItems();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [user?.uid]);
+
+  // Hide page loader only when both orders and stats are loaded
+  useEffect(() => {
+    if (ordersLoaded && statsLoaded) {
+      isPageLoading(false);
+    }
+  }, [ordersLoaded, statsLoaded, isPageLoading]);
+
+  // Orders are now filtered at database level, so use orders directly
+  const filteredOrders = orders;
 
   const getStatusConfig = (status) => {
     switch (status) {
@@ -342,7 +615,7 @@ const Orders = () => {
     }
   };
 
-  const StatCard = ({ icon, label, value, color, onClick, isActive }) => (
+  const StatCard = ({ icon, label, value, color, onClick, isActive, hasNotification }) => (
     <div
       onClick={onClick}
       style={{
@@ -357,8 +630,31 @@ const Orders = () => {
         border: isActive ? `2px solid ${color}` : "2px solid transparent",
         transition: "all 0.2s ease",
         flex: 1,
+        position: "relative",
       }}
     >
+      {hasNotification && (
+        <div
+          style={{
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            width: "12px",
+            height: "12px",
+            borderRadius: "50%",
+            background: "#f44336",
+            animation: "blink 1s infinite",
+          }}
+        />
+      )}
+      <style>
+        {`
+          @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+          }
+        `}
+      </style>
       <div
         style={{
           width: "44px",
@@ -571,7 +867,16 @@ const Orders = () => {
                   padding: "12px 16px",
                 }}
               >
-                {order.order.map((item, idx) => {
+                {[...order.order]
+                  .sort((a, b) => {
+                    // Sort new items (with addedAt) to the top
+                    const aIsNew = a.addedAt && a.addedAt === order.lastUpdated;
+                    const bIsNew = b.addedAt && b.addedAt === order.lastUpdated;
+                    if (aIsNew && !bIsNew) return -1;
+                    if (!aIsNew && bIsNew) return 1;
+                    return 0;
+                  })
+                  .map((item, idx) => {
                   const isNewItem = item.addedAt && item.addedAt === order.lastUpdated;
                   return (
                     <div
@@ -617,7 +922,7 @@ const Orders = () => {
                         </span>
                       </div>
                       <span style={{ fontWeight: "500", color: isNewItem ? "#2196F3" : "#555" }}>
-                        ₹{item.quantity * item.price}
+                        {storeDetails?.currencySymbol || "₹"}{item.quantity * item.price}
                       </span>
                     </div>
                   );
@@ -642,7 +947,7 @@ const Orders = () => {
                 <div
                   style={{ fontSize: "28px", fontWeight: "700", color: colors.success }}
                 >
-                  ₹{orderTotal}
+                  {storeDetails?.currencySymbol || "₹"}{orderTotal}
                 </div>
               </div>
 
@@ -780,7 +1085,7 @@ const Orders = () => {
             <StatCard
               icon={<FiShoppingBag size={22} color="#6366F1" />}
               label="All Orders"
-              value={orders.length}
+              value={statsCounts.all}
               color="#6366F1"
               onClick={() => setActiveFilter("all")}
               isActive={activeFilter === "all"}
@@ -788,7 +1093,7 @@ const Orders = () => {
             <StatCard
               icon={<FiClock size={22} color={colors.orange} />}
               label="New"
-              value={newOrders}
+              value={statsCounts.new}
               color={colors.orange}
               onClick={() => setActiveFilter("new")}
               isActive={activeFilter === "new"}
@@ -796,15 +1101,16 @@ const Orders = () => {
             <StatCard
               icon={<MdRestaurantMenu size={22} color="#2196F3" />}
               label="In Progress"
-              value={inProgressOrders}
+              value={statsCounts.accept}
               color="#2196F3"
               onClick={() => setActiveFilter("accept")}
               isActive={activeFilter === "accept"}
+              hasNotification={hasInProgressWithNewItems}
             />
             <StatCard
               icon={<FiCheckCircle size={22} color={colors.success} />}
               label="Completed"
-              value={completedOrders}
+              value={statsCounts.complete}
               color={colors.success}
               onClick={() => setActiveFilter("complete")}
               isActive={activeFilter === "complete"}
@@ -812,7 +1118,7 @@ const Orders = () => {
             <StatCard
               icon={<FiXCircle size={22} color={colors.reject} />}
               label="Cancelled"
-              value={cancelledOrders}
+              value={statsCounts.cancle}
               color={colors.reject}
               onClick={() => setActiveFilter("cancle")}
               isActive={activeFilter === "cancle"}
@@ -820,7 +1126,7 @@ const Orders = () => {
             <StatCard
               icon={<FiDollarSign size={22} color={colors.success} />}
               label="Revenue"
-              value={`₹${grandTotal}`}
+              value={`${storeDetails?.currencySymbol || "₹"}${grandTotal}`}
               color={colors.success}
             />
           </div>
@@ -834,13 +1140,24 @@ const Orders = () => {
             padding: "20px 24px",
           }}
         >
-          {filteredOrders.length > 0 ? (
+          {isLoadingPage ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "200px",
+              }}
+            >
+              <Spin size="large" />
+            </div>
+          ) : filteredOrders.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {filteredOrders.map((order) => (
                 <OrderCard
                   key={order.id}
                   order={order}
-                  isRecentlyUpdated={recentlyUpdatedOrders.has(order.id)}
+                  isRecentlyUpdated={recentlyUpdatedOrders.has(order.id) || !!order.lastUpdated}
                   onAcknowledgeNewItems={acknowledgeNewItems}
                 />
               ))}
@@ -861,6 +1178,161 @@ const Orders = () => {
                     : `No ${getStatusConfig(activeFilter).label.toLowerCase()} orders`
                 }
               />
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "8px",
+                marginTop: "24px",
+                paddingBottom: "20px",
+              }}
+            >
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1 || isLoadingPage}
+                style={{
+                  padding: "8px 12px",
+                  background: currentPage === 1 ? "#f0f0f0" : "white",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  color: currentPage === 1 ? "#999" : "#333",
+                  fontWeight: "500",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <FiChevronLeft size={18} />
+                Previous
+              </button>
+
+              <div style={{ display: "flex", gap: "4px" }}>
+                {/* First page */}
+                {currentPage > 3 && (
+                  <>
+                    <button
+                      onClick={() => handlePageClick(1)}
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        background: "white",
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontWeight: "500",
+                        color: "#333",
+                      }}
+                    >
+                      1
+                    </button>
+                    {currentPage > 4 && (
+                      <span style={{ padding: "0 4px", color: "#999", alignSelf: "center" }}>...</span>
+                    )}
+                  </>
+                )}
+
+                {/* Page numbers around current */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  if (pageNum < 1 || pageNum > totalPages) return null;
+                  if (currentPage > 3 && pageNum === 1) return null;
+                  if (currentPage < totalPages - 2 && pageNum === totalPages) return null;
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageClick(pageNum)}
+                      disabled={isLoadingPage}
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        background: pageNum === currentPage ? colors.orange : "white",
+                        border: pageNum === currentPage ? "none" : "1px solid #e0e0e0",
+                        borderRadius: "8px",
+                        cursor: pageNum === currentPage ? "default" : "pointer",
+                        fontWeight: "600",
+                        color: pageNum === currentPage ? "white" : "#333",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                {/* Last page */}
+                {currentPage < totalPages - 2 && totalPages > 5 && (
+                  <>
+                    {currentPage < totalPages - 3 && (
+                      <span style={{ padding: "0 4px", color: "#999", alignSelf: "center" }}>...</span>
+                    )}
+                    <button
+                      onClick={() => handlePageClick(totalPages)}
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        background: "white",
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontWeight: "500",
+                        color: "#333",
+                      }}
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages || isLoadingPage}
+                style={{
+                  padding: "8px 12px",
+                  background: currentPage === totalPages ? "#f0f0f0" : "white",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  color: currentPage === totalPages ? "#999" : "#333",
+                  fontWeight: "500",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Next
+                <FiChevronRight size={18} />
+              </button>
+
+              <span
+                style={{
+                  marginLeft: "16px",
+                  fontSize: "14px",
+                  color: "#666",
+                }}
+              >
+                Page {currentPage} of {totalPages} ({totalOrders} orders)
+              </span>
             </div>
           )}
         </div>

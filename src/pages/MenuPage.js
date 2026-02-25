@@ -28,8 +28,8 @@ import * as XLSX from "xlsx";
 
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-import { useSetAtom } from "jotai";
-import { pageLoading } from "../constants/stateVariables";
+import { useSetAtom, useAtom } from "jotai";
+import { pageLoading, store } from "../constants/stateVariables";
 import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
 
@@ -138,6 +138,7 @@ const MenuItemCard = ({
   onFileChange,
   onPreview,
   onRemove,
+  currencySymbol,
 }) => (
   <div
     style={{
@@ -187,7 +188,7 @@ const MenuItemCard = ({
           />
           <Input
             placeholder="Price"
-            prefix="₹"
+            prefix={currencySymbol}
             value={item.price || ""}
             onChange={(e) => onInputChange(category, index, "price", e.target.value)}
             style={{ borderRadius: "8px", flex: 1 }}
@@ -328,6 +329,7 @@ const MenuItemCard = ({
 
 const MenuPage = () => {
   const isPageLoading = useSetAtom(pageLoading);
+  const [storeDetails] = useAtom(store);
   const storage = getStorage();
   const excelInputRef = useRef(null);
   const { userData: user } = useAuth();
@@ -1050,6 +1052,7 @@ const MenuPage = () => {
                           onFileChange={handleFileChange}
                           onPreview={handlePreview}
                           onRemove={handleRemoveItem}
+                          currencySymbol={storeDetails?.currencySymbol || "₹"}
                         />
                       ))}
                     </div>
