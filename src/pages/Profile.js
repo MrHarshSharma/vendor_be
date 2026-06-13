@@ -191,39 +191,6 @@ function Profile() {
                 label="Number of Tables"
                 value={storeDetails?.tables || 0}
               />
-
-              {/* Color Preview */}
-              <div style={{ marginTop: "16px" }}>
-                <div style={{ fontSize: "12px", color: "#888", marginBottom: "8px" }}>
-                  Brand Colors
-                </div>
-                <div style={{ display: "flex", gap: "12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "8px",
-                        background: storeDetails?.primaryColor || "#ccc",
-                        border: "2px solid #e0e0e0",
-                      }}
-                    />
-                    <span style={{ fontSize: "12px", color: "#666" }}>Primary</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "8px",
-                        background: storeDetails?.secondaryColor || "#ccc",
-                        border: "2px solid #e0e0e0",
-                      }}
-                    />
-                    <span style={{ fontSize: "12px", color: "#666" }}>Secondary</span>
-                  </div>
-                </div>
-              </div>
             </SectionCard>
           </div>
 

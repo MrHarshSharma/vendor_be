@@ -33,7 +33,6 @@ const MainMenu = () => {
     if (user?.email) {
       fetchUserDocument();
     }
-    isPageLoading(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.email]);
 

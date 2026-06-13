@@ -6,7 +6,6 @@ import {
   FiSettings,
   FiType,
   FiImage,
-  FiDroplet,
 } from "react-icons/fi";
 import {
   getStorage,
@@ -18,7 +17,6 @@ import {
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/setup";
 import { useNavigate } from "react-router-dom";
-import { SketchPicker } from "react-color";
 
 import { useSetAtom } from "jotai";
 import { pageLoading, store } from "../constants/stateVariables";
@@ -40,8 +38,6 @@ function Dashboard() {
   const navigate = useNavigate();
   const [primaryColor, setPrimaryColor] = useState("#ffffff");
   const [secondaryColor, setSecondaryColor] = useState("#ffffff");
-  const [showPrimaryPicker, setShowPrimaryPicker] = useState(false);
-  const [showSecondaryPicker, setShowSecondaryPicker] = useState(false);
 
   const fetchConfigstore = async () => {
     try {
@@ -61,8 +57,6 @@ function Dashboard() {
         form.setFieldsValue({
           restaurantName: wholeData.restaurantName,
           restaurantType: wholeData.restaurantType,
-          primarycolor: wholeData.primaryColor,
-          secondarycolor: wholeData.secondaryColor,
           tagline: wholeData.tagline,
           subtagline: wholeData.subtagline,
           tables: wholeData.tables,
@@ -80,16 +74,6 @@ function Dashboard() {
     fetchConfigstore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handlePrimaryColorChange = (color) => {
-    setPrimaryColor(color.hex);
-    form.setFieldsValue({ primarycolor: color.hex });
-  };
-
-  const handleSecondaryColorChange = (color) => {
-    setSecondaryColor(color.hex);
-    form.setFieldsValue({ secondarycolor: color.hex });
-  };
 
   const uploadLogoImage = async (file, uid, logoname) => {
     return new Promise((resolve, reject) => {
@@ -194,84 +178,6 @@ function Dashboard() {
         </h3>
       </div>
       {children}
-    </div>
-  );
-
-  const ColorPickerField = ({
-    label,
-    color,
-    onChange,
-    showPicker,
-    setShowPicker,
-    formName,
-  }) => (
-    <div style={{ flex: 1 }}>
-      <div style={{ marginBottom: "8px", fontWeight: "500", color: "#333" }}>
-        {label} <span style={{ color: colors.reject }}>*</span>
-      </div>
-      <div style={{ position: "relative" }}>
-        <div
-          onClick={() => setShowPicker(!showPicker)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            padding: "12px 16px",
-            border: "1px solid #d9d9d9",
-            borderRadius: "8px",
-            cursor: "pointer",
-            background: "#fafafa",
-          }}
-        >
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "6px",
-              background: color,
-              border: "2px solid #e0e0e0",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          />
-          <span style={{ color: "#333", fontFamily: "monospace", fontSize: "14px" }}>
-            {color}
-          </span>
-        </div>
-        {showPicker && (
-          <div
-            style={{
-              position: "absolute",
-              zIndex: 100,
-              top: "100%",
-              left: 0,
-              marginTop: "8px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-              borderRadius: "12px",
-              overflow: "hidden",
-            }}
-          >
-            <SketchPicker color={color} onChange={onChange} />
-            <button
-              onClick={() => setShowPicker(false)}
-              style={{
-                width: "100%",
-                padding: "12px",
-                background: colors.success,
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: "600",
-                fontSize: "14px",
-              }}
-            >
-              Done
-            </button>
-          </div>
-        )}
-        <Form.Item name={formName} style={{ display: "none" }}>
-          <Input />
-        </Form.Item>
-      </div>
     </div>
   );
 
@@ -402,30 +308,6 @@ function Dashboard() {
               </Form.Item>
             </SectionCard>
 
-            {/* Branding Colors */}
-            <SectionCard
-              icon={<FiDroplet size={20} color={colors.success} />}
-              title="Brand Colors"
-            >
-              <div style={{ display: "flex", gap: "24px" }}>
-                <ColorPickerField
-                  label="Primary Color"
-                  color={primaryColor}
-                  onChange={handlePrimaryColorChange}
-                  showPicker={showPrimaryPicker}
-                  setShowPicker={setShowPrimaryPicker}
-                  formName="primarycolor"
-                />
-                <ColorPickerField
-                  label="Secondary Color"
-                  color={secondaryColor}
-                  onChange={handleSecondaryColorChange}
-                  showPicker={showSecondaryPicker}
-                  setShowPicker={setShowSecondaryPicker}
-                  formName="secondarycolor"
-                />
-              </div>
-            </SectionCard>
 
             {/* Logo */}
             <SectionCard
@@ -488,7 +370,8 @@ function Dashboard() {
                       }}
                     >
                       <img
-                        src={currentLogo}
+                        // src={currentLogo}
+                        src='/clientlogo.jpg'
                         alt="Current logo"
                         style={{
                           maxWidth: "100%",
